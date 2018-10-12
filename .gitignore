@@ -1,0 +1,4 @@
+*.yacc.c
+*.yacc.h
+*.lex.c
+main
