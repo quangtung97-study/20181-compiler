@@ -19,5 +19,5 @@ struct ScannerResult {
 
 ScannerResult scan(const std::string& input);
 
-std::string token_data_to_string(
+std::string to_string(
         const ScannerResult& result, TokenData token);

@@ -7,13 +7,6 @@ enum State {
     START = 0,
     NAME, NUMBER,
 
-    /*
-    Begin, Call, Const, Do, Else, End, For, 
-    If, Odd, Procedure, Function,
-    Program, Then, To, 
-    Var, While, 
-    */
-
     PLUS, MINUS, TIMES, DIVIDE, REMAINDER,
     PERIOD, COMMA, SEMICOLON, 
     LPARENT, RPARENT, 
@@ -28,7 +21,7 @@ enum State {
     STATE_SIZE,
 };
 
-std::map<std::string, Token> init_token_map() {
+static std::map<std::string, Token> init_token_map() {
     std::map<std::string, Token> map;
     
     map["begin"] = Token::Begin;
@@ -51,7 +44,7 @@ std::map<std::string, Token> init_token_map() {
     return map;
 }
 
-const std::map<std::string, Token> token_map = init_token_map();
+static const std::map<std::string, Token> token_map = init_token_map();
 
 // ------------------------------------------------------------------
 typedef bool HandleResult;
@@ -63,13 +56,13 @@ typedef std::array<HandleFunction, STATE_SIZE> Delta;
 
 // ------------------------------------------------------------------
 // Global Variables
-std::string g_data;
-Token g_token;
-std::string ident_name;
-int g_number;
-int g_token_index;
+static std::string g_data;
+static Token g_token;
+static std::string g_ident_name;
+static int g_number;
+static int g_token_index;
 
-HandleResult handle_start(State& state, char ch, int index) {
+static HandleResult handle_start(State& state, char ch, int index) {
     if (std::isspace(ch) || ch == '\0') 
         return Continue;
 
@@ -107,7 +100,7 @@ HandleResult handle_start(State& state, char ch, int index) {
     throw std::runtime_error("Unrecognize Character");
 }
 
-HandleResult handle_name(State&, char ch, int) {
+static HandleResult handle_name(State&, char ch, int) {
     if (std::isalpha(ch) || std::isdigit(ch) || ch == '_') {
         g_data += ch;
         return Continue;
@@ -119,12 +112,12 @@ HandleResult handle_name(State&, char ch, int) {
     }
     else {
         g_token = Token::Ident;
-        ident_name = g_data.substr(0, 10);
+        g_ident_name = g_data.substr(0, 10);
     }
     return Terminated;
 }
 
-HandleResult handle_number(State&, char ch, int) {
+static HandleResult handle_number(State&, char ch, int) {
     if (std::isdigit(ch)) {
         g_data += ch;
         return Continue;
@@ -138,12 +131,12 @@ HandleResult handle_number(State&, char ch, int) {
 }
 
 template <Token token_value>
-HandleResult handle(State&, char, int) {
+static HandleResult handle(State&, char, int) {
     g_token = token_value;
     return Terminated;
 }
 
-HandleResult handle_LT(State& state, char ch, int) {
+static HandleResult handle_LT(State& state, char ch, int) {
     if (ch == '=') {
         g_data += ch;
         state = LE;
@@ -160,7 +153,7 @@ HandleResult handle_LT(State& state, char ch, int) {
     return Terminated;
 }
 
-HandleResult handle_GT(State& state, char ch, int) {
+static HandleResult handle_GT(State& state, char ch, int) {
     if (ch == '=') {
         g_data += ch;
         state = GE;
@@ -171,7 +164,7 @@ HandleResult handle_GT(State& state, char ch, int) {
     return Terminated;
 }
 
-HandleResult handle_colon(State& state, char ch, int) {
+static HandleResult handle_colon(State& state, char ch, int) {
     if (ch == '=') {
         g_data += ch;
         state = ASSIGN;
@@ -180,7 +173,7 @@ HandleResult handle_colon(State& state, char ch, int) {
     throw std::runtime_error("Unrecognize character");
 }
 
-Delta init_delta() {
+static Delta init_delta() {
     std::array<HandleFunction, STATE_SIZE> delta;
 
     delta[START] = handle_start;
@@ -215,9 +208,9 @@ Delta init_delta() {
     return delta;
 }
 
-const Delta delta = init_delta();
+static const Delta delta = init_delta();
 
-HandleResult step(State& state, char ch, int index) {
+static HandleResult step(State& state, char ch, int index) {
     return delta[state](state, ch , index);
 }
 
@@ -236,7 +229,7 @@ ScannerResult scan(const std::string& input) {
 
             if (g_token == Token::Ident) {
                 data_index = ident_names.size();
-                ident_names.push_back(ident_name);
+                ident_names.push_back(g_ident_name);
             }
             else if (g_token == Token::Number) {
                 data_index = numbers.size();
@@ -261,7 +254,7 @@ ScannerResult scan(const std::string& input) {
     return {tokens, ident_names, numbers};
 }
 
-std::string token_data_to_string(const ScannerResult& result, TokenData data) {
+std::string to_string(const ScannerResult& result, TokenData data) {
     auto s = token_to_string(data.token);
     std::string tmp = s;
     tmp += ":\t";

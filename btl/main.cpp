@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 
     auto result = scan(input);
     for (auto e: result.tokens) {
-        std::cout << token_data_to_string(result, e) << std::endl;
+        std::cout << to_string(result, e) << std::endl;
     }
     return 0;
 }
