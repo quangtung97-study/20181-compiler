@@ -2,6 +2,8 @@
 #include <array>
 #include <iostream>
 #include <map>
+#include <sstream>
+#include <algorithm>
 
 enum State {
     START = 0,
@@ -60,7 +62,7 @@ static std::string g_data;
 static Token g_token;
 static std::string g_ident_name;
 static int g_number;
-static int g_token_index;
+static int g_input_index;
 
 static HandleResult handle_start(State& state, char ch, int index) {
     if (std::isspace(ch) || ch == '\0') 
@@ -69,11 +71,12 @@ static HandleResult handle_start(State& state, char ch, int index) {
     auto continue_with = [&] (State new_state) {
         state = new_state;
         g_data += ch;
-        g_token_index = index;
+        g_input_index = index;
         return Continue;
     };
 
-    if (std::isalpha(ch) || ch == '_') return continue_with(NAME);
+    // if (std::isalpha(ch) || ch == '_') return continue_with(NAME);
+    if (std::isalpha(ch)) return continue_with(NAME);
     if (std::isdigit(ch))return continue_with(NUMBER);
 
     if (ch == '+') return continue_with(PLUS);
@@ -97,14 +100,22 @@ static HandleResult handle_start(State& state, char ch, int index) {
 
     if (ch == ':') return continue_with(COLON);
 
-    throw std::runtime_error("Unrecognize Character");
+    throw ScannerError{SCANNER_UNRECOGNIZED_CHARACTER, index};
+}
+
+void str_tolower(std::string& s) {
+    for (auto& e: s)
+        e = std::tolower(e);
 }
 
 static HandleResult handle_name(State&, char ch, int) {
-    if (std::isalpha(ch) || std::isdigit(ch) || ch == '_') {
+    // if (std::isalpha(ch) || std::isdigit(ch) || ch == '_') {
+    if (std::isalpha(ch) || std::isdigit(ch)) {
         g_data += ch;
         return Continue;
     }
+
+    str_tolower(g_data);
 
     auto it = token_map.find(g_data);
     if (it != token_map.end()) {
@@ -112,7 +123,7 @@ static HandleResult handle_name(State&, char ch, int) {
     }
     else {
         g_token = Token::Ident;
-        g_ident_name = g_data.substr(0, 10);
+        g_ident_name = g_data.substr(0, IDENT_NAME_SIZE);
     }
     return Terminated;
 }
@@ -124,9 +135,14 @@ static HandleResult handle_number(State&, char ch, int) {
     }
 
     g_token = Token::Number;
-    if (g_data.size() > MAX_DIGIT_COUNT)
-        throw std::runtime_error("Number is too large");
-    g_number = std::stoi(g_data);
+
+    // g_number = std::stoi(g_data)
+    std::stringstream ss;
+    ss << g_data;
+    ss >> g_number;
+
+    if (g_number > MAX_NUMBER)
+        throw ScannerError{SCANNER_NUMBER_TOO_LARGE, g_input_index};
     return Terminated;
 }
 
@@ -164,15 +180,16 @@ static HandleResult handle_GT(State& state, char ch, int) {
     return Terminated;
 }
 
-static HandleResult handle_colon(State& state, char ch, int) {
+static HandleResult handle_colon(State& state, char ch, int index) {
     if (ch == '=') {
         g_data += ch;
         state = ASSIGN;
         return Continue;
     }
-    throw std::runtime_error("Unrecognize character");
+    throw ScannerError{SCANNER_UNRECOGNIZED_CHARACTER, index};
 }
 
+// Transition function
 static Delta init_delta() {
     std::array<HandleFunction, STATE_SIZE> delta;
 
@@ -214,6 +231,69 @@ static HandleResult step(State& state, char ch, int index) {
     return delta[state](state, ch , index);
 }
 
+static void remove_between(std::string& str, 
+        const std::string& left, const std::string& right) {
+    auto it = str.begin();
+    while (true) {
+        it = std::search(it, str.end(), left.begin(), left.end());
+        if (it == str.end())
+            break;
+
+        auto first = it;
+        it = std::search(first + 1, str.end(), right.begin(), right.end());
+        if (it != str.end())
+            it += right.length();
+
+        str.erase(first, it);
+    }
+}
+
+static void next_it_range_between(
+        std::string::const_iterator it,
+        std::string::const_iterator end,
+        const std::string& left, 
+        const std::string& right,
+        std::string::const_iterator& first, 
+        std::string::const_iterator& last) 
+{
+    it = std::search(it, end, left.begin(), left.end());
+    first = it;
+    if (it != end)
+        it += left.length();
+
+    it = std::search(it, end, right.begin(), right.end());
+    if (it != end)
+        it += right.length();
+
+    last = it;
+}
+
+static void next_comment_it_range(
+        std::string::const_iterator it,
+        std::string::const_iterator end,
+        std::string::const_iterator& first,
+        std::string::const_iterator& last)
+{
+    const std::string two_slash = "//";
+    const std::string new_line = "\n";
+    const std::string left_comment = "/*";
+    const std::string right_comment = "*/";
+
+    std::string::const_iterator first1, last1, first2, last2;
+
+    next_it_range_between(it, end, two_slash, new_line, first1, last1);
+    next_it_range_between(it, end, left_comment, right_comment, first2, last2);
+
+    if (first1 < first2) {
+        first = first1;
+        last = last1;
+    }
+    else {
+        first = first2;
+        last = last2;
+    }
+}
+
 ScannerResult scan(const std::string& input) {
     std::vector<TokenData> tokens;
     std::vector<std::string> ident_names;
@@ -221,8 +301,8 @@ ScannerResult scan(const std::string& input) {
 
     State state = START;
 
-    auto handle = [&](char ch, size_t& index) {
-        auto result = step(state, ch, index);
+    auto handle = [&](char ch, std::string::const_iterator& it) {
+        auto result = step(state, ch, it - input.begin());
         if (result == Terminated) {
 
             int data_index = -1;
@@ -236,33 +316,72 @@ ScannerResult scan(const std::string& input) {
                 numbers.push_back(g_number);
             }
 
-            tokens.push_back({g_token, (int)g_token_index, data_index});
+            tokens.push_back({g_token, (int)g_input_index, data_index});
 
             state = START;
             g_data.clear();
-            index--;
+            --it;
         }
     };
 
-    size_t i = 0;
-    for (; i < input.length(); i++) {
-        handle(input[i], i);
-    }
+    auto it = input.begin();
 
-    handle('\0', i);
+    std::string::const_iterator comment_first, comment_last;
+    next_comment_it_range(
+            it, input.end(), comment_first, comment_last);
+
+    for (;it != input.end(); ++it) {
+        if (it == comment_first) {
+            handle(' ', it);
+            it = comment_last;
+            next_comment_it_range(
+                    it, input.end(), comment_first, comment_last);
+            --it;
+            continue;
+        }
+        handle(*it, it);
+    }
+    handle('\0', it);
 
     return {tokens, ident_names, numbers};
 }
 
-std::string to_string(const ScannerResult& result, TokenData data) {
+std::string to_string(const ScannerResult& scanner_result, TokenData data) {
     auto s = token_to_string(data.token);
-    std::string tmp = s;
-    tmp += ":\t";
+    std::string result = s;
+    result += ":\t";
 
     if (data.token == Token::Ident)
-        return tmp + result.ident_names[data.data_index];
-    if (data.token == Token::Number)
-        return tmp + std::to_string(result.numbers[data.data_index]);
+        return result + scanner_result.ident_names[data.data_index];
+
+    if (data.token == Token::Number) {
+        std::stringstream ss;
+        auto num = scanner_result.numbers[data.data_index];
+        ss << num;
+        return result + ss.str();
+    }
 
     return s;
+}
+
+LineColNumber get_line_col_number(const std::string& input, int input_index) {
+    auto it = input.begin();
+    int line_index = 0;
+    while (it != input.end()) {
+        auto newline_it = std::find(it, input.end(), '\n');
+        auto range_size = newline_it - it;
+
+        if (newline_it != input.end()) {
+            newline_it++;
+            range_size++;
+        }
+
+        if (input_index < range_size ) 
+            return {line_index + 1, input_index + 1};
+
+        line_index++;
+        input_index -= range_size;
+        it = newline_it;
+    }
+    return {0, 0};
 }

@@ -16,7 +16,8 @@ enum class Token {
     Period, Comma, Semicolon, Assign,
 };
 
-#define MAX_DIGIT_COUNT 8
+#define MAX_NUMBER 999999999
+#define IDENT_NAME_SIZE 10
 
 static const char *token_to_string(Token token) {
     switch (token) {
