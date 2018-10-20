@@ -136,13 +136,15 @@ static HandleResult handle_number(State&, char ch, int) {
 
     g_token = Token::Number;
 
-    // g_number = std::stoi(g_data)
+    auto it = std::find_if(g_data.begin(), g_data.end(), 
+            [] (char ch) { return ch != '0'; });
+    if (g_data.end() - it > MAX_DIGIT_COUNT)
+        throw ScannerError{SCANNER_NUMBER_TOO_LARGE, g_input_index};
+
     std::stringstream ss;
     ss << g_data;
     ss >> g_number;
 
-    if (g_number > MAX_NUMBER)
-        throw ScannerError{SCANNER_NUMBER_TOO_LARGE, g_input_index};
     return Terminated;
 }
 
