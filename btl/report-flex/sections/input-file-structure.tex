@@ -13,6 +13,31 @@ bởi các dòng chỉ chứa xâu '\%\%': \\
 \end{itemize}
 
 \subsection{Vùng định nghĩa - Definitions Section}
+Vùng định nghĩa chứa các định nghĩa tên và các định nghĩa điều kiện bắt đầu.
+Định nghĩa tên có dạng:
+\begin{lstlisting}
+name definition
+\end{lstlisting}
+\textbf{'name'} là các tên có cú pháp giống như các tên trong ngôn ngữ C.
+\textbf{'definition'} là phần được lấy từ kí tự không phải kí tự trắng đầu tiên 
+sau \textbf{'name'} và đến hết dòng. 
+\textbf{'name'} không được thụt lề đầu dòng. 
+Các định nghĩa có thể được tham chiếu đến bằng cách sử dụng \textbf{'\{name\}'} 
+và nó sẽ được chuyển thành \textbf{'(definition)'}. \\
+Ví dụ: 
+\begin{lstlisting}
+DIGIT [0-9]
+\end{lstlisting}
+Thì \textbf{'\{DIGIT\}'} sẽ được chuyển thành \textbf{'([0-9])'}.
+
+Bất kì một dòng nào trong vùng này được viết thụt lề đầu dòng hoặc 
+được bao xung quanh bởi \textbf{\%\{} và \textbf{\%\}} thì sẽ được sao chép nguyên văn 
+vào file mã nguồn sinh ra. \\
+Ví dụ: 
+\lstinputlisting[style=customc]{src/unindented-line.l}
+Thì đoạn code sau sẽ được sao chép nguyên văn vào file đầu ra: 
+\lstinputlisting[style=customc]{src/unindented-line-output.c}
+
 \subsection{Vùng các luật - Rules Section}
 \subsection{Vùng mã nguồn bổ sung - User Code Section}
 

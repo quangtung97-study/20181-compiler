@@ -1,4 +1,6 @@
 *.yacc.c
 *.yacc.h
 *.lex.c
+*.lex.cpp
 main
+test/
