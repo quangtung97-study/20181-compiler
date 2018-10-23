@@ -1,0 +1,22 @@
+\documentclass[../report.tex]{subfiles}
+
+\begin{document}
+Flex là bộ sinh chương trình phân tích từ vựng, 
+là một phần mềm miễn phí và mã nguồn mở thay thế cho Lex. \cite{flex-wiki}
+Nó thường xuyên được sử dụng đi kèm với bộ sinh chương trình phân 
+tích cú pháp Yacc (hoặc mã nguồn mở thay thế là GNU Bison) để tạo nên 2 khối 
+chức năng cơ bản của một chương trình dịch. 
+
+Flex được viết bằng ngôn ngữ C bởi Vern Paxson vào khoảng năm 1987. 
+Flex nhận đầu vào là một file chỉ dẫn, thông thường có đuôi là \textbf{.l}.
+Từ đó Flex có thể sinh ra mã C có thể biên dịch và thực thi mà 
+không cần thêm bất kì thư viện ngoài nào. 
+
+Mã C sinh ra bởi Flex sử dụng Automata hữu hạn đơn định (Deterministic Finite Automation - DFA) 
+để thực hiện việc tách xâu đầu vào thành các từ tố tương ứng. 
+Thuật toán thường có độ phức tạp thời gian tính là $O(n)$ với $n$ là độ dài 
+xâu đầu vào. 
+
+Flex chỉ có thể sinh ra mã code C hoặc C++. 
+
+\end{document}

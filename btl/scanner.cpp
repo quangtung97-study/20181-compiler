@@ -136,8 +136,10 @@ static HandleResult handle_number(State&, char ch, int) {
 
     g_token = Token::Number;
 
+    // Find first character that not equals '0'
     auto it = std::find_if(g_data.begin(), g_data.end(), 
             [] (char ch) { return ch != '0'; });
+
     if (g_data.end() - it > MAX_DIGIT_COUNT)
         throw ScannerError{SCANNER_NUMBER_TOO_LARGE, g_input_index};
 
