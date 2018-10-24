@@ -1,0 +1,22 @@
+\documentclass[../report.tex]{subfiles}
+
+\begin{document}
+\subsection{Ví dụ một file đầu vào Flex đơn giản} 
+
+\subsection{Sử dụng Flex bằng dòng lệnh} 
+Một file chỉ thị đầu vào cho Flex có đuôi thông thường là \textbf{.l}, ví dụ \textbf{scanner.l}. 
+Để biên dịch file này sang file C/C++, ta sử dụng:
+\begin{verbatim}
+$ flex scanner.l
+\end{verbatim}
+Mặc định lệnh trên sẽ sinh ra một file \textbf{lex.yy.c}.
+Ta có thể dịch file này bằng một trình dịch C thông thường, ví dụ \textbf{gcc}:
+\begin{verbatim}
+$ gcc lex.yy.c -o main
+\end{verbatim}
+Ta có thể chỉ định tên file xuất ra bởi flex bằng cách sử dụng tùy chọn \textbf{-o <filename>}:
+\begin{verbatim}
+$ flex -o scanner.lex.cpp scanner.l
+\end{verbatim}
+
+\end{document}

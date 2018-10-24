@@ -6,7 +6,7 @@ report.pdf: report.bbl 	\
 			sections/title-page.tex \
 			sections/introduction.tex \
 			sections/input-file-structure.tex \
-			sections/compile-flex.tex \
+			sections/using-flex.tex \
 			sections/input-file-for-PLO.tex
 	pdflatex report.tex
 
