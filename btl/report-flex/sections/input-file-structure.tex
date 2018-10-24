@@ -2,7 +2,7 @@
 
 \begin{document}
 Mỗi file chỉ dẫn đầu vào cho Flex bao gồm 3 vùng, được phân tách nhau 
-bởi các dòng chỉ chứa xâu '\%\%': \\
+bởi các dòng chỉ chứa xâu '\%\%': \cite{flex-manual} \\
 \lstinputlisting[style=customc]{src/input-file-format.l}
 
 \noindent Trong đó: 
@@ -39,6 +39,60 @@ Thì đoạn code sau sẽ được sao chép nguyên văn vào file đầu ra:
 \lstinputlisting[style=customc]{src/unindented-line-output.c}
 
 \subsection{Vùng các luật - Rules Section}
+Là vùng bao gồm một chuỗi các luật có dạng:
+\begin{lstlisting}
+pattern action
+\end{lstlisting}
+Trong đó, \textbf{pattern} không được phép thụt lề đầu dòng. 
+Và phần \textbf{action} phải được bắt đầu trên cùng một dòng. 
+
+Ở trong vùng các luật, bất kì một dòng nào mà có thụt lề đầu dòng
+hoặc các dòng được bao bởi \textbf{\%\{ \%\}} nằm trước luật đầu tiên 
+có thể được sử dụng để khai báo những biến địa phương cho 
+hàm phân tích từ tố. Và các đoạn code này sẽ được thực thi mỗi 
+khi hàm phân tích từ tố được gọi. 
+
+Các \textbf{pattern} là các biểu thức chính quy phiên bản mở rộng, bao gồm:
+\begin{itemize}
+\item \textbf{'x'} \\
+    Nhận diện được kí tự 'x'.
+\item \textbf{'.'} \\
+    Bất kì cứ kị tự nào ngoại trừ dấu xuống dòng. 
+\item \textbf{'[xyz]'} \\
+    Là một ``Lớp các kí tự''. Nhận diện được một trong các kí tự: 'x', 'y', 'z'.
+\item \textbf{'[abj-oZ]'} \\
+    Là một ``Lớp các kí tự''. Nhận diện được kí tự 'a', 'b', bất kì kí tự nào 
+    trong khoảng từ 'j' đến 'o', hoặc kí tự 'Z'.
+\item \textbf{'[\textasciicircum A-Z\textbackslash n]'} \\
+    Là một ``Lớp phủ định các kí tự''. Nhận diện được bất kì kí tự nào không nằm trong khoảng 
+    được chỉ định. Ở đây, khoảng đó là các kí tự từ 'A' tới 'Z' và kí tự xuống dòng. 
+\item \textbf{'r*'} \\
+    Không hay nhiều \textbf{r}. Trong đó \textbf{r} là một biểu thức chính quy bất kì. 
+\item \textbf{'r+'} \\
+    Một hay nhiều \textbf{r}. Trong đó \textbf{r} là một biểu thức chính quy bất kì. 
+\item \textbf{'r?'} \\
+    Không hay một \textbf{r}. Trong đó \textbf{r} là một biểu thức chính quy bất kì. 
+\item \textbf{'r\{2, 5\}'} \\
+    \textbf{r} được xuất hiện liên tiếp từ 2 đến 5 lần. Trong đó \textbf{r} là một biểu thức chính quy bất kì. 
+\item \textbf{'r\{3.\}'} \\
+    \textbf{r} được xuất hiện từ 3 lần trở lên. Trong đó \textbf{r} là một biểu thức chính quy bất kì. 
+\item \textbf{'r\{4\}'} \\
+    \textbf{r} được xuất hiện chính xác 4 lần. Trong đó \textbf{r} là một biểu thức chính quy bất kì. 
+\item \textbf{'\{name\}'} \\
+    Thay thế định nghĩa 'name' thành 'definition' đã được chỉ định ở vùng định nghĩa. 
+\item \textbf{'rs'} \\
+    Phép nối biểu thức chính quy. 
+\item \textbf{'r|s'} \\
+    Phép hợp biểu thức chính quy. 
+\item \textbf{'\textasciicircum r'} \\
+    Nhận diện các xâu từ \textbf{r} nhưng phải bắt đầu dòng. 
+\item \textbf{'r\$'} \\
+    Nhận diện các xâu từ \textbf{r} nhưng phải kết thúc dòng. 
+    
+\end{itemize}
+
 \subsection{Vùng mã nguồn bổ sung - User Code Section}
+Các dòng code trong vùng này đơn giản được sao chép vào file mã nguồn đầu ra. 
+Vùng này có thể không có, có thể bỏ '\%\%' cuối cùng nếu vùng này trống rỗng.  
 
 \end{document}
