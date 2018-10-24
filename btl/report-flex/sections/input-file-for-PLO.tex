@@ -2,4 +2,44 @@
 
 \begin{document}
 \subsection{File chỉ dẫn đầu vào}
+\textbf{scanner.l}
+\lstinputlisting[style=customc]{src/PL0.l}
+
+\subsection{Chạy thử nghiệm}
+Biên dịch:
+\begin{verbatim}
+$ flex scanner.l
+$ gcc lex.yy.c -o main
+\end{verbatim}
+\HRule\\
+File \textbf{input} đầu vào: 
+\begin{verbatim}
+tungtaquangfjalskdfj kstn BEgin
+begin
+(()[]):= <> >= =
+1231241
+1234567890
+\end{verbatim}
+\HRule\\
+Kết quả chạy: 
+\begin{verbatim}
+$ ./main
+Token: tungtaquan
+Token: kstn
+begin
+begin
+(
+(
+)
+[
+]
+)
+:=
+<>
+>=
+=
+Number: 1231241
+So vuot qua 9 chu so!!
+\end{verbatim}
+
 \end{document}
