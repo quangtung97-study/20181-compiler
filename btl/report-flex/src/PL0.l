@@ -91,10 +91,15 @@ int yywrap() {
     return 1;
 }
 
-int main() {
-    FILE *file = fopen("input", "rb");
+int main(int argc, char **argv) {
+    if (argc <= 1) {
+        printf("Thieu ten file\n");
+        return -1;
+    }
+
+    FILE *file = fopen(argv[1], "rb");
     if (file == NULL) {
-        printf("File not found\n");
+        printf("Khong the doc file %s\n", argv[1]);
         return -1;
     }
     yyrestart(file);
@@ -103,16 +108,17 @@ int main() {
     while (token = yylex()) {
         if (token == TOKEN_IDENT) {
             char str[256];
+            // Lay xau con cua xau yytext 
             strncpy(str, yytext, IDENT_NAME_SIZE);
             str[IDENT_NAME_SIZE] = '\0';
             printf("Token: %s\n", str);
         }
         else if (token == TOKEN_NUMBER) {
             int i = 0;
-            for (; yytext[i]; i++)
+            for (; i < yyleng; i++)
                 if (yytext[i] != '0')
                     break;
-            if (strlen(yytext) - i > MAX_DIGIT_COUNT) {
+            if (yyleng - i > MAX_DIGIT_COUNT) {
                 printf("So vuot qua 9 chu so!!\n");
                 exit(-1);
             }
@@ -120,7 +126,7 @@ int main() {
             printf("Number: %d\n", num);
         }
         else {
-            for (int i = 0; yytext[i]; i++) 
+            for (int i = 0; i < yyleng; i++) 
                 yytext[i] = tolower(yytext[i]);
             printf("%s\n", yytext);
         }

@@ -54,41 +54,41 @@ khi hàm phân tích từ tố được gọi.
 
 Các \textbf{pattern} là các biểu thức chính quy phiên bản mở rộng, bao gồm:
 \begin{itemize}
-\item \textbf{'x'} \\
+\item \textbf{x} \\
     Nhận diện được kí tự 'x'.
-\item \textbf{'.'} \\
+\item \textbf{.} \\
     Bất kì cứ kị tự nào ngoại trừ dấu xuống dòng. 
-\item \textbf{'[xyz]'} \\
+\item \textbf{[xyz]} \\
     Là một ``Lớp các kí tự''. Nhận diện được một trong các kí tự: 'x', 'y', 'z'.
-\item \textbf{'[abj-oZ]'} \\
+\item \textbf{[abj-oZ]} \\
     Là một ``Lớp các kí tự''. Nhận diện được kí tự 'a', 'b', bất kì kí tự nào 
     trong khoảng từ 'j' đến 'o', hoặc kí tự 'Z'.
-\item \textbf{'[\textasciicircum A-Z\textbackslash n]'} \\
+\item \textbf{[\textasciicircum A-Z\textbackslash n]} \\
     Là một ``Lớp phủ định các kí tự''. Nhận diện được bất kì kí tự nào không nằm trong khoảng 
     được chỉ định. Ở đây, khoảng đó là các kí tự từ 'A' tới 'Z' và kí tự xuống dòng. 
-\item \textbf{'r*'} \\
+\item \textbf{r*} \\
     Không hay nhiều \textbf{r}. Trong đó \textbf{r} là một biểu thức chính quy bất kì. 
-\item \textbf{'r+'} \\
+\item \textbf{r+} \\
     Một hay nhiều \textbf{r}. Trong đó \textbf{r} là một biểu thức chính quy bất kì. 
-\item \textbf{'r?'} \\
+\item \textbf{r?} \\
     Không hay một \textbf{r}. Trong đó \textbf{r} là một biểu thức chính quy bất kì. 
-\item \textbf{'r\{2, 5\}'} \\
+\item \textbf{r\{2, 5\}} \\
     \textbf{r} được xuất hiện liên tiếp từ 2 đến 5 lần. Trong đó \textbf{r} là một biểu thức chính quy bất kì. 
-\item \textbf{'r\{3.\}'} \\
+\item \textbf{r\{3.\}} \\
     \textbf{r} được xuất hiện từ 3 lần trở lên. Trong đó \textbf{r} là một biểu thức chính quy bất kì. 
-\item \textbf{'r\{4\}'} \\
+\item \textbf{r\{4\}} \\
     \textbf{r} được xuất hiện chính xác 4 lần. Trong đó \textbf{r} là một biểu thức chính quy bất kì. 
-\item \textbf{'\{name\}'} \\
+\item \textbf{\{name\}} \\
     Thay thế định nghĩa 'name' thành 'definition' đã được chỉ định ở vùng định nghĩa. 
-\item \textbf{'rs'} \\
+\item \textbf{rs} \\
     Phép nối biểu thức chính quy. 
-\item \textbf{'r|s'} \\
+\item \textbf{r|s} \\
     Phép hợp biểu thức chính quy. 
-\item \textbf{'\textasciicircum r'} \\
+\item \textbf{\textasciicircum r} \\
     Nhận diện các xâu từ \textbf{r} nhưng phải bắt đầu dòng. 
-\item \textbf{'r\$'} \\
+\item \textbf{r\$} \\
     Nhận diện các xâu từ \textbf{r} nhưng phải kết thúc dòng. 
-\item \textbf{'(?r-s:pattern)'} \\
+\item \textbf{(?r-s:pattern)} \\
     Áp dụng tùy chọn \textbf{r}, loại bỏ tùy chọn \textbf{s} lên biểu thức chính quy \textbf{pattern}.
     Ví dụ tùy chọn \textbf{i} để không phân biệt hoa và thường (case-insensitive).
     

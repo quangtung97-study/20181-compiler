@@ -2,6 +2,43 @@
 
 \begin{document}
 \subsection{Hoạt động của Flex}
+Flex sẽ phân tích file chỉ dẫn đầu vào rồi tạo một DFA tương ứng. 
+DFA này được mã hóa trong mã nguồn C/C++. DFA này sẽ ưu tiên những \textbf{pattern}
+có độ dài càng lớn.
+
+Chương trình sinh ra bởi Flex sẽ mặc định đọc dữ liệu từ \textbf{stdin}.
+Ta có thể sử dụng hàm \textbf{void yyrestart(FILE *file)} để thiết lập 
+con trỏ file mà chương sẽ sử dụng để đọc file đầu vào. 
+
+Chương trình sẽ bắt đầu quá trình nhận diện xâu khi hàm \textbf{int yylex();} được gọi. 
+Khi đó, nếu một xâu được nhận diện bởi một luận nào đó, mã nguồn C/C++ tương ứng với \textbf{pattern} được 
+thực thi. Nếu đoạn mã đấy không có \textbf{return}, chương trình sẽ tiếp tục phân 
+tích từ tố tiếp theo \cite{return-stmt}. Nếu có \textbf{return}, giá trị từ tố (hay giá trị \textbf{return})
+được trả về qua giá trị trả về của hàm \textbf{yylex()}.
+Xâu được nhận diện sẽ nằm trong biến toàn cục \textbf{yytext}, 
+độ dài của xâu sẽ nằm trong biến toàn cục \textbf{yyleng}.
+
+Nếu không một \textbf{pattern} nào nhận diện được xâu đầu vào, 
+\textbf{luật mặc định} sẽ được thực thi: Kí tự tiếp theo trong file đầu vào sẽ 
+được coi như là nhận diện được, và sẽ được in ra màn hình. 
+
+Kích thước giới hạn của \textbf{yytext} được định nghĩa bởi hằng \textbf{YYLMAX}, 
+là một số khá lớn. 
+Ta có thể thay đổi nó đơn giản bởi định nghĩa lại: \textbf{\#define YYLMAX <number>}.
+
+Hơn nữa, để có thể biên dịch được chương trình, ta cần phải định nghĩa hàm \textbf{yywrap}.
+Hàm \textbf{int yywrap()} được gọi khi đầu vào đã được đọc hết. Nếu hàm trả về giá trị $1$, 
+quá trình phân tích kết thúc, trả về 0 nếu như việc xử lý vẫn còn tiếp tục. Ta có thể 
+thay đổi biến toàn cục \textbf{yyin} trỏ đến một file khác (hoặc sử dụng \textbf{yyrestart})
+và chương trình sẽ tiếp tục phân tích từ file mới đó. \cite{yywrap-yyin}
+
+Hoặc đơn giản ta có thể định nghĩa: 
+\begin{lstlisting}
+int yywrap() {
+    return 1;
+}
+\end{lstlisting}
+Trong vùng \textbf{User Code Section} của file chỉ thị.
 
 \subsection{Ví dụ một file đầu vào Flex đơn giản} 
 
