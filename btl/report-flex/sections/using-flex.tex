@@ -19,12 +19,15 @@ Xâu được nhận diện sẽ nằm trong biến toàn cục \textbf{yytext},
 độ dài của xâu sẽ nằm trong biến toàn cục \textbf{yyleng}.
 
 Nếu không một \textbf{pattern} nào nhận diện được xâu đầu vào, 
-\textbf{luật mặc định} sẽ được thực thi: Kí tự tiếp theo trong file đầu vào sẽ 
+\textbf{luật mặc định} sẽ được thực thi: 
+Kí tự tiếp theo trong file đầu vào sẽ 
 được coi như là nhận diện được, và sẽ được in ra màn hình. 
 
-Kích thước giới hạn của \textbf{yytext} được định nghĩa bởi hằng \textbf{YYLMAX}, 
+Kích thước giới hạn của \textbf{yytext} 
+được định nghĩa bởi hằng \textbf{YYLMAX}, 
 là một số khá lớn. 
-Ta có thể thay đổi nó đơn giản bởi định nghĩa lại: \textbf{\#define YYLMAX <number>}.
+Ta có thể thay đổi nó đơn giản bởi định nghĩa lại: 
+\textbf{\#define YYLMAX <number>}.
 
 Hơn nữa, để có thể biên dịch được chương trình, ta cần phải định nghĩa hàm \textbf{yywrap}.
 Hàm \textbf{int yywrap()} được gọi khi đầu vào đã được đọc hết. Nếu hàm trả về giá trị $1$, 
@@ -41,9 +44,43 @@ int yywrap() {
 Trong vùng \textbf{User Code Section} của file chỉ thị.
 
 \subsection{Ví dụ một file đầu vào Flex đơn giản} 
+\lstinputlisting[style=customc]{src/simple-flex.l}
+
+Bắt đầu file là việc viết một dòng mã C để khai báo 2 biến 
+\textbf{num\_lines} và \textbf{num\_chars} 
+gán giá trị mặc định bằng 0. 
+
+Vùng định nghĩa các luật (vùng thứ 2) bao gồm 2 luật:
+\begin{itemize}
+    \item \textbf{\textbackslash n} \\
+        Là luật nhận diện kí tự xuống dòng. Phần \textbf{action}
+        thực hiện tăng giá trị 2 biến, rồi trả về 1. 
+        Giá trị trả về này sẽ là giá trị trả về của hàm 
+        \textbf{yylex()}.
+    \item \textbf{.} \\
+        Là luật nhận diện kí tự bất kì. Phần \textbf{action}
+        thực hiện tăng giá trị của \textbf{num\_chars}, rồi
+        trả về 2.
+\end{itemize}
+
+Vùng mã nguồn bổ sung bao gồm định nghĩa 2 hàm: 
+\begin{itemize}
+    \item \textbf{int yywrap()} \\
+        Chỉ đơn giản trả về 1, chỉ định rằng sau khi kết thúc đọc
+        dữ liệu đầu vào file (hoặc từ bàn phím) sẽ kết thúc 
+        luôn việc phân tích từ tố 
+        (hay sẽ không có dữ liệu tiếp theo nào nữa).
+    \item \textbf{int main()} \\
+        Gọi hàm \textbf{yylex()} liên tục để phân tích từng từ tố
+        cho đến khi không thể phân tích thêm (giá trị trả về là 0).  
+        Và thực hiện in ra số dòng và số kí tự.
+\end{itemize}
+
+
 
 \subsection{Sử dụng Flex bằng dòng lệnh} 
-Một file chỉ thị đầu vào cho Flex có đuôi thông thường là \textbf{.l}, ví dụ \textbf{scanner.l}. 
+Một file chỉ thị đầu vào cho Flex có đuôi 
+thông thường là \textbf{.l}, ví dụ \textbf{scanner.l}. 
 Để biên dịch file này sang file C/C++, ta sử dụng:
 \begin{verbatim}
 $ flex scanner.l

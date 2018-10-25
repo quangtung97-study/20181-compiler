@@ -33,7 +33,17 @@ ALPHA       [A-Za-z]
 ALPHADIGIT  [A-Za-z0-9]
 WHITESPACE  [ \n\t\r]
 
+%x COMMENT_SINGLE
+%x COMMENT_MULTIPLE
+
 %%
+
+<INITIAL>"//"           BEGIN(COMMENT_SINGLE);
+<INITIAL>"/*"           BEGIN(COMMENT_MULTIPLE);
+<COMMENT_SINGLE,COMMENT_MULTIPLE>.  ;
+<COMMENT_SINGLE>"\n"    BEGIN(INITIAL);
+<COMMENT_MULTIPLE>"\n"  ;
+<COMMENT_MULTIPLE>"*/"  BEGIN(INITIAL);
 
 (?i:begin)              return TOKEN_BEGIN;
 (?i:call)               return TOKEN_CALL;

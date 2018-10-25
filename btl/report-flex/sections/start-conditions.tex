@@ -1,0 +1,83 @@
+\documentclass[../report.tex]{subfiles}
+
+\begin{document}
+Flex cung cấp cơ chế cho việc kích hoạt các luật dưới những điều kiện cụ thể. 
+Bất kì một luật nào được bắt đầu bằng \textbf{'<sc>'} sẽ chỉ được 
+kích hoạt khi trình phân tích từ tố (scanner) ở trong 
+một "điều kiện bắt đầu" cụ thể, ở đây là \textbf{sc}. 
+Điều kiện bắt đầu
+có thể hiểu đơn giản là những 
+trạng thái mà scanner có thể chuyển tới, 
+những trạng thái này quyết định những luật (rules) nào được kích hoạt 
+tại thời điểm đó.
+Ví dụ: 
+\begin{lstlisting}
+<STRING>[a-zA-Z]*               do_this();
+<INITIAL,STRING,QUOTE>"abc"     do_that();
+\end{lstlisting}
+Trong đó 
+\textbf{STRING},
+\textbf{INITIAL},
+\textbf{QUOTE}
+là các điều kiện bắt đầu. \\
+\textbf{INITIAL} là điều kiện bắt đầu (hay trạng thái) 
+ban đầu của scanner. Luật \textbf{[a-zA-Z]*} chỉ hoạt động khi 
+điều kiện bắt đầu là \textbf{STRING}. Luật 
+\textbf{"abc"} chỉ hoạt động khi điều kiện bắt đầu là một 
+trong ba khả năng: 
+\textbf{STRING},
+\textbf{INITIAL} và
+\textbf{QUOTE}
+.Nếu ta không chỉ định điều kiện bắt đầu thì mặc định sẽ là 
+\textbf{INITIAL}
+\begin{lstlisting}
+ABCD[0-9] do_somthing();
+\end{lstlisting}
+Tương đương với:
+\begin{lstlisting}
+<INITIAL>ABCD[0-9] do_somthing();
+\end{lstlisting}
+
+Để sử dụng được các điều kiện bắt đầu, trước tiên 
+ta phải khai báo chúng, có hai cách khai báo: 
+\begin{lstlisting}
+%s EXAMPLE1
+%x EXAMPLE2
+\end{lstlisting}
+Các khai báo thứ nhất: \textbf{'\%s'} 
+được gọi là kiểu khai báo 'inclusive'. \\
+Các khai báo thứ hai: \textbf{'\%x'} được gọi là kiểu 
+khai báo 'exclusive'.
+
+Điểm khác nhau giữa chúng là: Những luật không bắt đầu bởi điều kiện bắt đầu sẽ mặc định bao gồm
+\textbf{INITIAL} và các điều kiện bắt đầu 'inclusive', ví dụ:
+\begin{lstlisting}
+"xyz"   something();
+\end{lstlisting}
+Tương đương với:
+\begin{lstlisting}
+<INITIAL, EXAMPLE1>"xyz"   something();
+\end{lstlisting}
+Hay những điều kiện bắt đầu 'exclusive' sẽ không được thêm vào 
+danh sách mặc định. 
+
+\noindent Ta có thể chuyển đổi điều kiện bắt đầu bằng cách gọi hàm:
+\begin{lstlisting}
+BEGIN(some_start_condition)
+\end{lstlisting}
+Trong các \textbf{action}.
+
+Trong báo cáo này sẽ sử dụng các điều kiện bắt đầu để loại bỏ các 
+comment (một dòng và nhiều dòng) trong ngôn ngữ PL/0 mở rộng. 
+Ví dụ cho comment một dòng:
+\begin{lstlisting}
+%x COMMENT
+%%
+"//"            BEGIN(COMMENT);
+<COMMENT>"\n"   BEGIN(INITIAL);
+<COMMENT>.      ;
+%%
+...
+\end{lstlisting}
+
+\end{document}
