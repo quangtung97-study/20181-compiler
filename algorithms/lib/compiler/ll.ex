@@ -15,6 +15,7 @@ defmodule Compiler.LL do
   # For FIRST computation
 
   defp first_concat(list, map, k) do
+    # %{[]}
     single = [[]] |> MapSet.new()
 
     list
@@ -65,17 +66,19 @@ defmodule Compiler.LL do
     |> append_set(Map.get(follows, a), k)
   end
 
-  defp follow_to_tuples({_a, []}, _follows, _firsts, _k), do: []
-
   defp follow_to_tuples({a, list}, follows, firsts, k) do
     nonterminal? = &Map.has_key?(follows, &1)
 
-    {hd(list), tl(list)}
-    |> Stream.iterate(fn {_, tail} -> {hd(tail), tl(tail)} end)
-    |> Stream.take(length(list))
+    unfold_func = fn
+      [] -> nil
+      list -> {{hd(list), tl(list)}, tl(list)}
+    end
+
+    list
+    |> Stream.unfold(unfold_func)
     |> Stream.filter(fn {head, _} -> nonterminal?.(head) end)
-    |> Stream.map(fn {b, list} ->
-      {b, follow_concat(list, a, follows, firsts, k)}
+    |> Stream.map(fn {head, list} ->
+      {head, follow_concat(list, a, follows, firsts, k)}
     end)
   end
 
@@ -112,6 +115,69 @@ defmodule Compiler.LL do
 
     new_map
   end
+
+  # For LL(k) checking
+
+  defp compute_production_map(vn, p) do
+    pmap =
+      vn
+      |> Stream.map(&{&1, []})
+      |> Map.new()
+
+    pmap_reduce = fn {a, list}, map ->
+      tail = Map.get(map, a)
+      Map.put(map, a, [list | tail])
+    end
+
+    p
+    |> Enum.reduce(pmap, pmap_reduce)
+    |> Map.to_list()
+    |> Stream.map(fn {key, list} -> {key, Enum.reverse(list)} end)
+    |> Map.new()
+  end
+
+  def disjoint_asymmetric_pairs(input_list) do
+    input_list
+    |> Stream.unfold(fn
+      [] -> nil
+      list -> {{hd(list), tl(list)}, tl(list)}
+    end)
+    |> Stream.flat_map(fn {e1, list} ->
+      Stream.map(list, fn e2 -> {e1, e2} end)
+    end)
+  end
+
+  defp check_ll_production({a, lists}, firsts, follows, k) do
+    follow_a = Map.get(follows, a)
+
+    reducer = fn {{list1, set1}, {list2, set2}}, errors ->
+      case MapSet.disjoint?(set1, set2) do
+        true -> errors
+        false -> [{a, {list1, set1}, {list2, set2}} | errors]
+      end
+    end
+
+    lists
+    |> Stream.map(&{&1, first_concat(&1, firsts, k)})
+    |> Stream.map(fn {list, set} ->
+      {list, append_set(set, follow_a, k)}
+    end)
+    |> Enum.to_list()
+    |> disjoint_asymmetric_pairs()
+    |> Enum.reduce([], reducer)
+  end
+
+  def ll?(vn, p, firsts, follows, k) do
+    compute_production_map(vn, p)
+    |> Map.to_list()
+    |> Enum.flat_map(&check_ll_production(&1, firsts, follows, k))
+    |> (fn
+          [] -> true
+          list -> {:error, list}
+        end).()
+  end
+
+  # For displaying
 
   def to_string(map) do
     list_to_string = fn list ->
