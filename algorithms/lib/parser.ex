@@ -1,6 +1,6 @@
 defmodule Parser do
-  def tree(parent, childs) do
-    {parent, childs}
+  def tree(parent, children) do
+    {parent, children}
   end
 
   defp g({[:a | tail], trees}) do
