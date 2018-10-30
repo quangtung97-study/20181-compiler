@@ -3,4 +3,4 @@
 *.lex.c
 *.lex.cpp
 main
-test/
+/test/
