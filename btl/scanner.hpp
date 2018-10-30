@@ -1,3 +1,6 @@
+#ifndef SCANNER_HPP
+#define SCANNER_HPP
+
 #include <string>
 #include <vector>
 #include <utility>
@@ -38,4 +41,4 @@ struct ScannerError {
     int input_index;
 };
 
-
+#endif
