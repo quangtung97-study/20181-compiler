@@ -1,0 +1,3 @@
+program tung;
+const x = 20, b = 100;
+var mang[100;

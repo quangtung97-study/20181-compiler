@@ -1,0 +1,32 @@
+(* 
+ta quang tung mssv: 20154280
+lop: Kstn-cntt-k60
+*)
+program tung;
+const tung = 124, tung344 = 42141;
+var tung;
+
+procedure tung;
+begin
+    x := x + 100 * a;
+end;
+
+procedure quangtung(var x; y);
+begin
+end;
+
+begin
+    if 5 = 10 then
+    begin
+        x := 10;
+    end;
+
+    // xafasdfs
+    for x := y to z do
+    begin
+        x := x + 100;
+        y := x[10] * (a + 100 * 3);
+    end;
+
+    x := 20;
+end.

@@ -1,0 +1,7 @@
+proGRAM tung;
+
+procedure ngan;
+    const x = 100, y = 20;
+    var a, b;
+begin
+end

@@ -1,0 +1,2 @@
+program tung;
+var x, y[100], z
