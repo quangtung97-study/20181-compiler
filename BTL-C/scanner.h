@@ -1,7 +1,7 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
-#include "reader.h"
+#include <stdio.h>
 
 enum Token {
     TOKEN_IDENT = 1,
@@ -25,11 +25,13 @@ enum Token {
     END_OF_TOKENS
 };
 
-void sc_init();
+void sc_init(FILE *fp);
 
 enum Token sc_get();
 const char *sc_name();
 int sc_number();
+int sc_line();
+int sc_col();
 
 void sc_next();
 

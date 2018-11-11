@@ -13,8 +13,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    rd_set(fp);
-    sc_init();
+    sc_init(fp);
 
     while (sc_get() != END_OF_TOKENS) {
         sc_print(sc_get());

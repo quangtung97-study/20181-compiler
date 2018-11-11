@@ -1,3 +1,4 @@
+#include "reader.h"
 #include "scanner.h"
 #include <stdlib.h>
 #include <ctype.h>
@@ -15,13 +16,16 @@ static char g_number[32];
 static int g_number_end;
 static int g_number_value;
 
-static void error(const char *s, int line, int col) {
+static int g_line, g_col;
+
+static void error(const char *s) {
     printf("Loi: %s!!!\n", s);
-    printf("Tai dong %d, cot %d\n", line, col);
+    printf("Tai dong %d, cot %d\n", sc_line(), sc_col());
     exit(-1);
 }
 
-void sc_init() {
+void sc_init(FILE *fp) {
+    rd_set(fp);
     g_name_end = 0;
     g_number_end = 0;
     sc_next();
@@ -29,6 +33,14 @@ void sc_init() {
 
 enum Token sc_get() {
     return g_token;   
+}
+
+int sc_line() {
+    return g_line;
+}
+
+int sc_col() {
+    return g_col;
 }
 
 static void put_name(char ch) {
@@ -47,9 +59,9 @@ const char *sc_name() {
     return g_name;
 }
 
-static void put_number(char ch, int line, int col) {
+static void put_number(char ch) {
     if (g_number_end == MAX_DIGIT_COUNT)
-        error("So qua lon", line, col);
+        error("So qua lon");
 
     if (ch != '0' || g_number_end > 0)
         g_number[g_number_end++] = ch;
@@ -104,10 +116,8 @@ static void NAME() {
 }
 
 static void NUMBER() {
-    int line = rd_line();
-    int col = rd_col();
     while (isdigit(rd_get())) {
-        put_number(rd_get(), line, col);
+        put_number(rd_get());
         rd_next();
     }
     number_end();
@@ -157,6 +167,9 @@ static void START() {
 
     if (rd_get() == '\0')
         return;
+
+    g_line = rd_line();
+    g_col = rd_col();
 
     if (isalpha(rd_get())) {
         NAME();
@@ -226,12 +239,12 @@ static void START() {
     else if (rd_get() == ':') {
         rd_next();
         if (rd_get() != '=')
-            error("Thieu dau = ", rd_line(), rd_col());
+            error("Thieu dau = ");
         rd_next();
         put_token(TOKEN_ASSIGN);
     }
     else {
-        error("Khong nhan dien duoc ki tu", rd_line(), rd_col());
+        error("Khong nhan dien duoc ki tu");
     }
 }
 
