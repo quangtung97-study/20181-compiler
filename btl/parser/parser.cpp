@@ -83,10 +83,16 @@ void EXPR() {
         next();
     }
     TERM();
-    while (get().token == Token::Plus || 
-            get().token == Token::Minus) {
+expr_loop:
+    if (get().token == Token::Plus) {
         next();
         TERM();
+        goto expr_loop;
+    }
+    if (get().token == Token::Minus) {
+        next();
+        TERM();
+        goto expr_loop;
     }
 }
 

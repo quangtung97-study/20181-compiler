@@ -24,7 +24,14 @@ begin
     // xafasdfs
     for x := y to z do
     begin
-        x := x + 100;
+        x := x + 100 - a * 100 + a;
+        (* ta quang tung *)
+        if odd mang[10] then
+        begin
+            a := a + 1;
+        end;
+        n := n - 20;
+        a := a * 10 / 20 % y;
         y := x[10] * (a + 100 * 3);
     end;
 
