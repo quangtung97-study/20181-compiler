@@ -1,4 +1,6 @@
-#include "parser.h"
+#include "scanner.h"
+#include <ctype.h>
+#include <stdlib.h>
 
 int main(int argc, char **argv) {
     if (argc <= 1) {
@@ -11,10 +13,12 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    ps_init(fp);
-    ps_parse();
+    sc_init(fp);
 
-    printf("Nhan dien thanh cong!!!\n");
+    while (sc_get() != END_OF_TOKENS) {
+        sc_print(sc_get());
+        sc_next();
+    }
 
     fclose(fp);
     return 0;
