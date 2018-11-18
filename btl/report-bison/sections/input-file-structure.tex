@@ -1,0 +1,37 @@
+\documentclass[../report.tex]{subfiles}
+
+\begin{document}
+\subsection{Các thành phần của một file văn phạm}
+Một file mô tả văn phạm của Bison được chia thành 4 phần như sau: 
+\cite{grammar-file}
+\begin{lstlisting}
+%{
+    Prologue
+%}
+
+Bison declarations
+
+%%
+Grammar rules
+%%
+
+Epilogue
+\end{lstlisting}
+Trong đó, phần Prologue thường 
+chứa các khai báo hàm, include của C. \\
+Phần Bison Declarations chứa các khai báo được Bison sử dụng. \\
+Phần Grammar Rules chứa các quy tắc ngữ pháp của ngôn ngữ đang cần biểu diễn và 
+các lệnh thực hiện tương ứng. \\
+Phần Epilogue thường chứa định nghĩa của các hàm C tương ứng với phần 
+Prologue.
+
+\subsection{Phần Prologue}
+Phần Prologue chứa các định nghĩa macro và các khai báo của các 
+hàm và biến được sử dụng trong các câu lệnh của phần Grammar Rules. 
+\cite{prologue}
+
+Những đoạn code trong phần này sẽ được sao chép vào phần đầu 
+file mã nguồn của chương trình dịch được sinh ra. Có thể sử dụng 
+\textbf{\#include ``\ldots''} để include các file header tương ứng. 
+
+\end{document}
