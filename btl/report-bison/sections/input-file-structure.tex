@@ -34,4 +34,181 @@ Những đoạn code trong phần này sẽ được sao chép vào phần đầ
 file mã nguồn của chương trình dịch được sinh ra. Có thể sử dụng 
 \textbf{\#include ``\ldots''} để include các file header tương ứng. 
 
+Có thể có nhiều hơn một phần Prologue nằm đan xen với các phần Bison Declarations.
+
+\subsection{Phần Bison Declarations}
+Phần Bison Declarations định nghĩa các kí hiệu được sử dụng 
+để xây dựng ngữ pháp chương trình và kiểu dữ liệu của các giá trị. 
+\cite{bison-declarations}
+
+Tất cả token (ngoại trừ các token có một kí tự như '+' hoặc '*') phải được khai báo trước khi có thể sử dụng. 
+Các kí hiệu không kết thúc phải được khai báo nếu muốn định nghĩa 
+kiểu của kí hiệu đó để sử dụng làm giá trị ngữ nghĩa. 
+
+Phần Bison Declarations cũng chỉ định kí hiệu không kết thúc bắt đầu
+của văn phạm. Mặc định là sử dụng kí hiệu bên trái 
+của rule đầu tiên trong phần Grammar Rules. 
+
+Các khai báo trong phần Bison Declarations bao gồm: 
+\begin{itemize}
+\item \textbf{Khai báo require}:
+Có thể chỉ định version nhỏ nhất của Bison trong khi xử lý 
+file ngữ pháp. Nếu như yêu cầu về version không đủ, 
+Bison dừng việc xử lý và báo lỗi. 
+\begin{lstlisting}
+%require ``version''
+\end{lstlisting}
+
+\item \textbf{Khai báo token}:
+Để khai báo tên của token (kí tự kết thúc), ta sử dụng:
+\cite{token-declarations}
+\begin{lstlisting}
+%token name
+\end{lstlisting}
+Bison sẽ chuyển khai báo token thành một hằng số trong file 
+mã nguồn đầu ra (file header) để mà flex có thể sử dụng \textbf{name} để làm giá trị token cần trả về của hàm \textbf{yylex()}
+
+Có thể chỉ định giá trị số của token bằng cú pháp: 
+\begin{lstlisting}
+%token NUM 300
+\end{lstlisting}
+Trong đó $300$ là giá trị số của token \textbf{NUM}
+
+Nhưng tốt hơn cả là để Bison lựa chọn giá trị số cho tất cả các 
+token. Bison sẽ tự động chọn các số mà không xung đột với giá trị của
+các kí tự ASCII và các token trước đó. 
+(Giá trị Bison chọn luôn lớn hơn 255). 
+
+\item \textbf{Khai báo union và kiểu dữ liệu}:
+Trong hầu hết các chương trình sẽ cần nhiều hơn một kiểu dữ liệu 
+cho các token khác nhau. 
+\cite{more-than-one} 
+Như giữa token đại diện cho số và token đại diện cho xâu. 
+
+Mặc định Bison chỉ có một kiểu giá trị ngữ nghĩa là int. 
+Để sử dụng nhiều hơn một kiểu dữ liệu cho các giá trị ngữ
+nghĩa, Bison yêu cầu trong file ngữ pháp phải có: 
+\begin{itemize}
+\item Chỉ định toàn bộ tập các kiểu dữ liệu sẽ được sử dụng (có thể
+        sử dụng \textbf{\%union})
+\item Trong các kí hiệu mà giá trị ngữ nghĩa được sử dụng 
+    (kết thúc hoặc không kết thúc), 
+    Chọn một trong các kiểu được chỉ định ở trên.
+    (Sử dụng khai báo \textbf{\%token} 
+        bổ sung kiểu cho các kí hiệu kết thúc,
+    sử dụng \textbf{\%type} cho các kí hiệu không kết thúc)
+\end{itemize}
+Để khai báo union, ta dùng cú pháp: 
+\begin{lstlisting}
+%union {
+    int num;
+    char *name;
+}
+\end{lstlisting}
+Để khai báo token có chứa kiểu, ta dùng cú pháp: 
+\begin{lstlisting}
+%token <num> NUMBER
+\end{lstlisting}
+Trong đó token \textbf{NUMBER} có kiểu là kiểu của 
+biến \textbf{num} trong \textbf{union}.
+
+Để khai báo kí hiệu không kết thúc có chứa kiểu, ta dùng: 
+\begin{lstlisting}
+%type <num> NONTERMINAL
+\end{lstlisting}
+Trong đó kí hiệu không kết thúc \textbf{NONTERMINAL} 
+có kiểu là kiểu của biến \textbf{num} trong \textbf{union}. 
+\cite{nonterminal-decl}
+
+\item \textbf{Khai báo kí hiệu bắt đầu văn phạm}: 
+\cite{start-symbol}
+Bison mặc định rằng kí hiệu bắt đầu văn phạm là kí tự không
+kết thúc đầu tiên bên trái trong Phần Grammar Rules. 
+Có thể thay đổi kí hiệu này bằng: 
+\begin{lstlisting}
+%start symbol
+\end{lstlisting}
+
+\end{itemize}
+
+\subsection{Phần Grammar Rules}
+Phần khai báo ngữ pháp của Bison bao gồm các grammar rule có 
+dạng tổng quát như sau: 
+\cite{syntax-rules}
+\begin{lstlisting}
+result: components...;
+\end{lstlisting}
+Trong đó \textbf{result} là kí hiệu không kết thúc 
+mà rule này mô tả, và \textbf{components} là 
+một chuỗi các kí hiệu kết thúc và không kết thúc tạo nên một 
+sản xuất.
+
+Ví dụ: 
+\begin{lstlisting}
+exp: exp '+' exp;
+\end{lstlisting}
+Mô tả một sản xuất $exp \rightarrow exp + exp$.
+Các kí tự dấu trắng không ảnh hưởng đến định nghĩa các rule. 
+
+Giữa các \textbf{component} có thể chứa các \textbf{action}
+dùng để định nghĩa ngữ nghĩa của rule đó. 
+Một \textbf{action} có dạng:
+\begin{lstlisting}
+{C statements}
+\end{lstlisting}
+\textbf{C statements} là một tập các câu lệnh của C được bao bọc 
+trong cặp ngoặc nhọn, các lệnh này là các lệnh giống như được 
+sử dụng bên trong định nghĩa hàm C. 
+Bison không kiểm tra tính đúng đắn của các lệnh C này, chỉ copy 
+nguyên vẹn vào file mã nguồn đầu ra. 
+
+Nhiều các \textbf{rule} cho cùng một \textbf{result} có thể được 
+định nghĩa bằng cách kết nối chúng bằng kí tự '|':
+\begin{lstlisting}
+result  :   rule1-components...
+        |   rule2-components...
+        ...
+        ;
+\end{lstlisting}
+Ví dụ: 
+\begin{lstlisting}
+E   :   E '+' T     { printf(``E\n'');
+    |   T           { printf(``T\n'');
+    ;
+\end{lstlisting}
+Mô tả một sản xuất $E \rightarrow E + T | T$.
+
+Một \textbf{rule} là trống rỗng nếu như bên phải của nó (các 
+\textbf{component}) là trống rỗng. 
+\cite{empty-rules}
+Nó giống như kí hiệu $\varepsilon$ thể hiện một xâu rỗng. 
+
+Ví dụ:
+\begin{lstlisting}
+E   :   TE1
+E1  :   '+' T E1
+    | 
+    ;
+\end{lstlisting}
+Mô tả hai sản xuất là 
+$E \rightarrow TE_1$
+và 
+$E_1 \rightarrow +TE_1 | \varepsilon$
+
+Tuy nhiên việc không sử dụng kí tự gì khiến việc xác định rule 
+trống rỗng khó khăn, ta có thể sử dụng \textbf{\%empty}:
+\begin{lstlisting}
+E   :   TE1
+E1  :   '+' T E1
+    |   %empty
+    ;
+\end{lstlisting}
+Tuy nhiên \textbf{\%empty} là một mở rộng của Bison và 
+không tồn tại trên Yacc.
+
+Trong Bison ta nên khai báo các rule (hay các sản xuất) dưới dạng 
+đệ quy trái thay vì đệ quy phải để tránh sử dụng stack trong quá trình hoạt động của parser. \cite{left-recursion}
+
+
+
 \end{document}
