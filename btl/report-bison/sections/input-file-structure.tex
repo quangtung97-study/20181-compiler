@@ -209,6 +209,11 @@ không tồn tại trên Yacc.
 Trong Bison ta nên khai báo các rule (hay các sản xuất) dưới dạng 
 đệ quy trái thay vì đệ quy phải để tránh sử dụng stack trong quá trình hoạt động của parser. \cite{left-recursion}
 
-
+\subsection{Phần Epilogue}
+Những đoạn code trong phần Epilogue sẽ được sao chép nguyên vẹn 
+vào cuối của file mã nguồn parser đẩu ra, giống như là code trong
+phần Prologue được sao chép vào phần đầu của file đầu ra. 
+Nếu như phần Epilogue trống rỗng, ta có thể bỏ đi \textbf{\%\%} 
+kế thúc phần Grammar Rules.
 
 \end{document}

@@ -1,0 +1,64 @@
+\documentclass[../report.tex]{subfiles}
+
+\begin{document}
+\cite{c-interface} Chương trình được Bison sinh ra là một chương 
+trình C và hàm thực sự thực hiện quá trình phân tích cú 
+pháp là \textbf{yyparse}.
+\subsection{Hàm phân tích cú pháp yyparse} 
+Để quá trình phân tích cú pháp được thực thi, ta gọi 
+hàm \textbf{yyparse}. Hàm này sẽ đọc các token, 
+thực thi các \textbf{action} trong phần 
+Grammar Rules tương ứng, rồi cuối cùng trả về một giá trị 
+khi gặp kí tự báo kết thúc file hoặc khi không thể phục hồi 
+từ lỗi. Ta cũng có thể chỉ định cho hàm \textbf{yyparse}
+trả về ngay lập tức mà không đọc thêm từ tố nào nữa. 
+
+\begin{lstlisting}
+int yyparse(void);
+\end{lstlisting}
+Hàm trả về $0$ nếu như quá trình phân tích cú pháp thành công (hàm 
+trả về do gặp kí tự kết thúc file). \\
+Hàm trả về $1$ nếu như gặp lỗi do đầu vào không hợp lệ (Ví dụ: Chuỗi
+token đầu vào không thỏa mãn cú pháp đã được chỉ định) hoặc do 
+hàm \textbf{YYABORT} được gọi.  \\
+Hàm trả về $2$ nếu như trình phân tích sử dụng hết bộ nhớ cho phép. 
+
+Trong một \textbf{action} bất kì của phần Grammar Rules, ta có 
+thể chỉ định cho hàm \textbf{yyparse} trả về ngay lập tức bằng 
+cách sử dụng 2 macro sau: 
+\begin{itemize}
+\item \textbf{YYACCEPT}: Trả về ngay lập tức với giá trị 0 
+(thành công)
+\item \textbf{YYABORT}: Trả về ngay lập tức với giá trị 1 
+(lỗi)
+\end{itemize}
+
+\subsection{Hàm phân tích từ tố yylex}
+Hàm \textbf{yylex} là hàm nhận diện các từ tố từ một xâu đầu vào 
+và trả về các giá trị từ tố đó cho parser sử dụng. 
+Bison không tạo hàm này một cách từ động mà ta cần phải tạo nó 
+để hàm \textbf{yyparse} có thể gọi nó. 
+
+Trong một chương trình đơn giản, ta có thể tạo hàm \textbf{yylex}
+ngay trong phần Epilogue. Nhưng nếu \textbf{yylex} được 
+định nghĩa ở một file riêng (ví dụ như dùng Flex để sinh) 
+thì ta cần phải cho phép file đó có thể đọc được định nghĩa 
+của các token (do sử dụng \textbf{\%token}). 
+Để làm điều đó, ta sử dụng tùy chọn '-d' khi chạy Bison, để cho 
+Bison sẽ ghi những định nghĩa token và các định nghĩa macro cần 
+thiết ra một file header riêng biệt, thông thường là 
+\textbf{name.tab.h}.
+
+Quy ước của hàm \textbf{yylex}:
+\begin{lstlisting}
+int yylex(void);
+\end{lstlisting}
+Hàm phải trả về một giá trị số không âm cho các token 
+đã được nhận diện; giá trị 0 hoặc giá trị âm báo hiệu kết thúc file. 
+
+Quy ước này được thiết kế để đầu ra của chương trình 
+sinh bởi lex/flex có thể được sử dụng làm đầu vào cho Bison. 
+
+\subsection{Hàm báo lỗi yyerror}
+
+\end{document}
