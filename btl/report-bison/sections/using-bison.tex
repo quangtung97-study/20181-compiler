@@ -1,4 +1,54 @@
 \documentclass[../report.tex]{subfiles}
 
 \begin{document}
+\subsection{Các lệnh biên dịch chương trình}
+Nếu ta có file grammar đầu vào là \textbf{example.y}, 
+lệnh để sinh mã nguồn C từ file này là: 
+\begin{verbatim}
+$ bison -d -o example.yacc.c example.y
+\end{verbatim}
+Lệnh này sẽ tạo ra 2 file \textbf{example.yacc.c} và 
+\textbf{example.yacc.h}. 
+Tùy chọn \textbf{-d} nghĩa là sẽ tạo ra file header 
+cùng với file mã nguồn. Tùy chọn \textbf{-o <filename>} 
+chỉ định tên file sẽ được sinh ra. 
+
+Nếu \textbf{-o example.yacc.cxx} hoặc \textbf{-o example.yacc.cpp}
+thì file header tương 
+ứng là \textbf{example.yacc.hxx} hoặc \textbf{example.yacc.hpp}
+
+File \textbf{example.yacc.h} sẽ thường được include vào 
+mã lex và mã nguồn chứa hàm main tương ứng. 
+
+\subsection{Parser sinh bởi Bison đơn giản}
+Ở đây ta dùng Bison để sinh chương trình tính toán 
+biểu thức đơn giản.
+
+File ngữ pháp bison: \textbf{calc.y}
+\lstinputlisting[style=customc]{src/calc.y}
+
+File chỉ thị của flex: \textbf{calc.l}
+\lstinputlisting[style=customc]{src/calc.l}
+
+File chứa hàm main: \textbf{main.c}
+\lstinputlisting[style=customc]{src/main.c}
+
+Để biên dịch chương trình: 
+\begin{verbatim}
+bison -d -o calc.yacc.c calc.y
+flex -o calc.lex.c calc.l
+gcc main.c calc.yacc.c calc.lex.c -o main
+\end{verbatim}
+ 
+Khi đó với file đầu vào: \textbf{input}
+\begin{verbatim}
+(-3 - 2) * (20 + 80) + 50
+\end{verbatim}
+
+Ta được đầu ra: 
+\begin{verbatim}
+$ ./main < input
+-450
+\end{verbatim}
+
 \end{document}

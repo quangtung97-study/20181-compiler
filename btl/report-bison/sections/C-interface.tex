@@ -60,5 +60,34 @@ Quy ước này được thiết kế để đầu ra của chương trình
 sinh bởi lex/flex có thể được sử dụng làm đầu vào cho Bison. 
 
 \subsection{Hàm báo lỗi yyerror}
+Khi parser sinh bởi Bison phát hiện một lỗi cú pháp bởi đọc một token 
+mà không có sản xuất nào thỏa mãn. Ngoài ra, một \textbf{action}
+trong Grammar Rules sử dụng macro \textbf{YYERROR} để báo lỗi. 
+
+Khi parser sinh bởi Bison muốn báo lỗi, nó sử dụng hàm 
+\textbf{yyerror} mà ta bắt buộc phải khai báo và định nghĩa. 
+Hàm \textbf{yyerror} có một tham số đầu vào là một xâu, thông 
+thường là xâu ``syntax error''.
+
+Parser cũng có thể phát hiện một loại lỗi khác: cạn kiệt bộ nhớ. 
+Nó có thể xảy ra khi mà chuỗi token đầu vào chứa một cấu trúc 
+lồng nhau rất sâu. Nhưng lỗi này thường không xảy ra do 
+parser tạo bởi Bison sẽ tự động mở rộng kích thước stack khi 
+nó chạm tới ngưỡng. Xâu được truyền vào hàm \textbf{yyerror}
+là: ``memory exhausted''. 
+
+Hàm \textbf{yyerror} được định nghĩa đơn giản như sau: 
+\begin{lstlisting}
+void yyerror(const char *s) {
+    fprintf(stderr, ``%s\n'', s);
+}
+\end{lstlisting}
+Tuy nhiên ta cần khai báo hàm này trong phần Prologue để tránh 
+trình dịch báo lỗi. 
+
+Sau khi hàm \textbf{yyerror} trả về, hàm \textbf{yyparse} 
+sẽ cố gắng khôi phục lỗi nếu ta đã viết những Grammar Rule phù 
+hợp.
+
 
 \end{document}
