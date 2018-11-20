@@ -131,6 +131,12 @@ Có thể thay đổi kí hiệu này bằng:
 
 \end{itemize}
 
+Ngoài các phần kể trên, Bison còn hỗ trợ độ ưu tiên các toán tử
+và thứ tự thực hiện của chúng (từ trái qua phải hoặc ngược lại). 
+Tuy nhiên những điều đó có thể được biểu diễn bằng cách sử dụng văn
+phạm phù hợp, dựa trên các kĩ thuật khử văn phạm nhập nhằng. 
+Vì vậy trong báo cáo này sẽ không đề cập các phần đó. 
+
 \subsection{Phần Grammar Rules}
 Phần khai báo ngữ pháp của Bison bao gồm các grammar rule có 
 dạng tổng quát như sau: 
@@ -160,7 +166,9 @@ Một \textbf{action} có dạng:
 trong cặp ngoặc nhọn, các lệnh này là các lệnh giống như được 
 sử dụng bên trong định nghĩa hàm C. 
 Bison không kiểm tra tính đúng đắn của các lệnh C này, chỉ copy 
-nguyên vẹn vào file mã nguồn đầu ra. 
+nguyên vẹn vào file mã nguồn đầu ra. Các lệnh này sẽ được 
+chạy khi mà đã xác định cây cú pháp và tiến hành thực hiện 
+phân tích ngữ nghĩa. 
 
 Nhiều các \textbf{rule} cho cùng một \textbf{result} có thể được 
 định nghĩa bằng cách kết nối chúng bằng kí tự '|':
