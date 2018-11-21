@@ -1,0 +1,24 @@
+program tung;
+(* ta quang tung *)
+// kstn cntt k60
+const ab = 20, y = 100;
+var x, a[234];
+
+procedure tung ;
+const a = 20;
+var x[2];
+begin
+    if odd 5 then 
+        x := 10;
+
+    for i := 1 to 10 do
+        begin 
+            x := 20;
+            a[i] := 5;
+        end;
+    while x >= 0 do
+        x := -x + 1;
+end;
+
+begin
+end.

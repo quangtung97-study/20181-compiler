@@ -51,4 +51,14 @@ $ ./main < input
 -450
 \end{verbatim}
 
+\subsection{Biểu diễn ngữ pháp của PL0 trong Bison} 
+\lstinputlisting[style=customc]{src/pl0.y}
+Trong đó 
+\begin{lstlisting}
+% nonassoc THEN
+% nonassoc ELSE
+\end{lstlisting}
+được sử dụng để giải quyết vấn đề nhập nhằng của 
+văn phạm do ``Dangling else'' \cite{dangling-else}.
+
 \end{document}

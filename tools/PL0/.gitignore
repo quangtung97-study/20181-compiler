@@ -1,0 +1,5 @@
+main
+*.yacc.c
+*.yacc.h
+*.lex.c
+*.output
