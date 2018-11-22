@@ -17,6 +17,9 @@
 %%
 F   :   NUMBER      { $$ = $1; }
     |   '(' E ')'   { $$ = $2; }         
+    |   '(' error ')' { printf("Thieu toan hang trong ngoac\n"); YYABORT; }
+    |   '(' E error { printf("Thieu dau dong ngoac )\n"); YYABORT; }
+    |   error       { printf("Thieu toan hang\n"); YYABORT; }
     ;
 U   :   F           { $$ = $1; }
     |   '-' F       { $$ = -$2; }
@@ -30,5 +33,6 @@ T   :   U           { $$ = $1; }
 E   :   T           { $$ = $1; set_number($$); }
     |   E '+' T     { $$ = $1 + $3; set_number($$); }
     |   E '-' T     { $$ = $1 - $3; set_number($$); }
+    |   E error T   { printf("Thieu phep toan\n"); YYABORT; }
     ;
 %%

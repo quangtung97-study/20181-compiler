@@ -1,0 +1,46 @@
+\documentclass[../report.tex]{subfiles}
+
+\begin{document}
+Để điều khiển quá trình khôi phục lỗi trong Bison, ta sử dụng 
+cách viết thêm các sản xuất mà trong đó chứa một token 
+đặc biệt: \textbf{error}. Kí tự kết thúc (hay token) này luôn luôn
+được định nghĩa và không thể được sử dụng cho các token thông thường 
+khác. Parser sinh bởi Bison sẽ sinh ra một token \textbf{error}
+khi mà gặp phải lỗi cú pháp. Nếu ta có token này trong sản xuất, 
+quá trình phân tích cú pháp có thể được tiếp tục. 
+
+Ví dụ: 
+\begin{lstlisting}
+stmts   :   %empty
+        |   stmts '\n'
+        |   stmts exp '\n'
+        |   stmts error '\n'
+\end{lstlisting}
+Token \textbf{error} trong ví dụ này chỉ định rằng lỗi theo sau 
+là một dấu xuống dòng là hợp lệ với sản xuất cuối cùng này. 
+
+Vậy điều gì sẽ thực sự xảy ra nếu một lỗi xuất hiện trong 
+\textbf{exp}?. Trong trường hợp đó, hầu như sẽ xảy ra tình huống
+còn lại một lượng các token trong stack theo sau \textbf{stmts} 
+mà chưa được reduce, và đồng thời cũng có những token 
+sẽ cần phải đọc trước khi gặp được kí tự xuống dòng. Do vậy nên 
+sản xuất phục hồi lỗi sẽ không được áp dụng theo một cách thông 
+thường. 
+
+Tuy nhiên Bison sẽ tìm cách sao cho trạng thái parser  phù hợp 
+với sản xuất trên. Đầu tiên bằng cách loại bỏ các token và trạng 
+thái trên stack sao cho nó trở về trạng thái mà token 
+\textbf{error} có thể được chấp nhận. Sau đó, nó tiếp tục loại 
+bỏ các token còn lại trong đầu vào cho đến khi gặp được kí tự 
+phù hợp, trong trường hợp này là kí tự xuống dòng.
+
+Với nhiều hợp, việc phục hồi lỗi không thể làm tốt hơn việc 
+là đoán. Nếu mà parser đoán sai, một lỗi cú pháp có thể 
+dẫn đến nhiều lỗi cú pháp khác. Để ngăn ngừa 
+việc có quá nhiều thông báo lỗi cú pháp được in ra, parser 
+sẽ không xuất ra thông báo lỗi cho những lỗi 
+xuất hiện gần lỗi thứ nhất; chỉ khi sau 3 token liên tiếp 
+từ đầu vào 
+đã được chấp nhận bởi sản xuất khôi phục lỗi trước đó, 
+thông báo lỗi mới có thể tiếp tục được in ra. 
+\end{document}

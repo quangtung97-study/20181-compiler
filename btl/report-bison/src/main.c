@@ -12,6 +12,7 @@ void set_number(int n) {
 
 int main() {
     int res = yyparse();
-    printf("%d\n", g_number);
+    if (res == 0)
+        printf("%d\n", g_number);
     return res;
 }

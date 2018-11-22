@@ -7,7 +7,8 @@ report.pdf: report.bbl 	\
 			sections/introduction.tex \
 			sections/input-file-structure.tex \
 			sections/C-interface.tex \
-			sections/using-bison.tex
+			sections/using-bison.tex \
+			sections/error-recovery.tex
 	pdflatex report.tex
 
 report.bbl: report.bib 
