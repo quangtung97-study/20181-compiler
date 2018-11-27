@@ -1,15 +1,15 @@
 #include "scanner.h"
 #include <ctype.h>
-#include <stdlib.h>
+#include <iostream>
 
 int main(int argc, char **argv) {
     if (argc <= 1) {
-        printf("Thieu tham so\n");
+        std::cout << "Thieu tham so" << std::endl;
         return -1;
     }
     FILE *fp = fopen(argv[1], "rb");
     if (fp == NULL) {
-        printf("Khong the doc file\n");
+        std::cout << "Khong the doc file" << std::endl;
         return -1;
     }
 

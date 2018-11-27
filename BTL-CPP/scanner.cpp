@@ -1,8 +1,10 @@
 #include "reader.h"
 #include "scanner.h"
-#include <stdlib.h>
+#include <cstdlib>
 #include <ctype.h>
-#include <string.h>
+#include <string>
+#include <cstring>
+#include <iostream>
 
 #define IDENT_NAME_SIZE 10
 #define MAX_DIGIT_COUNT 9
@@ -19,9 +21,10 @@ static int g_number_value;
 static int g_line, g_col;
 
 static void error(const char *s) {
-    printf("Loi: %s!!!\n", s);
-    printf("Tai dong %d, cot %d\n", sc_line(), sc_col());
-    exit(-1);
+    std::cout << "Loi: " << s << std::endl;
+    std::cout << "Tai dong " << sc_line()
+        << ", cot " << sc_col() << std::endl;
+    std::exit(-1);
 }
 
 void sc_init(FILE *fp) {
@@ -85,7 +88,7 @@ static void put_token(enum Token t) {
 }
 
 #define IF_KEYWORD(str, token) \
-    if (strcmp(sc_name(), str) == 0) \
+    if (std::strcmp(sc_name(), str) == 0) \
         put_token(token)
 
 static void NAME() {
@@ -255,13 +258,14 @@ void sc_next() {
 }
 
 #define CASE(token, str) \
-    case token: printf("%s\n", str); break
+    case token: std::cout << str << std::endl; break
 
 void sc_print(enum Token t) {
     switch (t) {
-        case TOKEN_IDENT: printf("ident: %s\n", sc_name()); break;
-        case TOKEN_NUMBER: printf("number: %d\n", sc_number()); break;
-
+        case TOKEN_IDENT: std::cout << "ident: " 
+                          << sc_name() << std::endl; break;
+        case TOKEN_NUMBER: std::cout << "number: " 
+                           <<  sc_number() << std::endl; break;
         CASE(TOKEN_BEGIN, "begin");
         CASE(TOKEN_CALL, "call");
         CASE(TOKEN_CONST, "const");

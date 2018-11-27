@@ -1,5 +1,6 @@
 #include "reader.h"
 #include <stdlib.h>
+#include <string>
 
 #define BUFF_SIZE 1024
 #define TRUE 1
@@ -65,12 +66,16 @@ int rd_col() { return g_col; }
 
 int rd_line() { return g_line; }
 
-char *rd_all() {
+std::string rd_all() {
     fseek(g_file, 0, SEEK_END);
     int size = ftell(g_file);
     fseek(g_file, 0, SEEK_SET);
-    char *s = (char *)malloc(size + 1);
+
+    char *s = new char[size + 1];
     fread(s, 1, size, g_file);
     s[size] = '\0';
-    return s;
+
+    std::string result = s;
+    delete[] s;
+    return result;
 }

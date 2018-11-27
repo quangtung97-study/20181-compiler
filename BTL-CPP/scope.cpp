@@ -1,14 +1,19 @@
+#include "reader.h"
+#include "scanner.h"
 #include "scope.h"
 #include <stack>
 #include <iostream>
 #include <cstdlib>
 
+
 std::unique_ptr<Scope> g_root_scope;
 std::stack<Scope *> g_scope_stack;
 
-void error(const std::string& s) {
-    std::cout << "Loi: ";
-    std::cout << s << std::endl;
+static void error(const std::string& s) {
+    std::cout << rd_all() << std::endl;
+    std::cout << "Loi: " << s << std::endl;
+    std::cout << "Tai dong " << sc_line() 
+        << ", cot " << sc_col() << std::endl;
     std::exit(-1);
 }
 

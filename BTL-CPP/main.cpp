@@ -20,19 +20,19 @@ void print_scope(Scope *scope) {
 
 int main(int argc, char **argv) {
     if (argc <= 1) {
-        printf("Thieu tham so\n");
+        std::cout << "Thieu tham so" << std::endl;
         return -1;
     }
     FILE *fp = fopen(argv[1], "rb");
     if (fp == NULL) {
-        printf("Khong the doc file\n");
+        std::cout << "Khong the doc file" << std::endl;
         return -1;
     }
 
     ps_init(fp);
     ps_parse();
 
-    printf("Nhan dien thanh cong!!!\n");
+    std::cout << "Nhan dien thanh cong!!!\n" << std::endl;
 
     print_scope(scope_top());
 

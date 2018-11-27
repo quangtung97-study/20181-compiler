@@ -1,38 +1,39 @@
 #include "reader.h"
 #include <ctype.h>
-#include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
 
 void show(char ch) {
     if (ch == '\n')
-        printf("LF");
+        std::cout << "LF";
     else if (ch == ' ')
-        printf("SPC");
+        std::cout << "SPC";
     else if (ch == '\r')
-        printf("CR");
+        std::cout << "CR";
     else if (ch == '\0')
-        printf("NULL");
+        std::cout << "NULL";
     else {
-        printf("%c", ch);
+        std::cout << ch;
     }
 }
 
 int main() {
     FILE *fp = fopen("input", "rb");
     if (fp == NULL) {
-        printf("Error while reading that file\n");
+        std::cout << "Loi trong qua trinh doc file" << std::endl;
         return -1;
     }
 
     rd_set(fp);
     while (rd_get() != '\0') {
         show(rd_get());
-        printf("\tpos: (%d, %d)\n", rd_line(), rd_col());
+        std::cout << "Pos: " << rd_line() 
+            << ", " << rd_col() << std::endl;
         rd_next();
     }
 
-    char *s = rd_all();
-    printf("%s", s);
-    free(s);
+    auto s = rd_all();
+    std::cout << s << std::endl;
 
     fclose(fp);
     return 0;
