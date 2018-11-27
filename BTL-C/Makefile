@@ -1,3 +1,3 @@
 .PHONY: all
 all:
-	gcc main.c parser.c scanner.c reader.c -o main
+	g++ -std=c++11 main.cpp scope.cpp parser.cpp scanner.cpp reader.cpp -o main

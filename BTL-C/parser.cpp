@@ -1,23 +1,32 @@
 #include "reader.h"
 #include "scanner.h"
 #include "parser.h"
-#include <stdlib.h>
+#include "scope.h"
+#include <cstdlib>
+#include <iostream>
 
 void ps_init(FILE *fp) {
     sc_init(fp);
+    scope_init();
 }
 
-static void error(const char *s) {
-    printf("%s\n", rd_all());
-    printf("Loi: %s!!!\n", s);
-    printf("Tai dong %d, cot %d\n", sc_line(), sc_col());
-    exit(-1);
+static void error(const std::string& s) {
+    std::cout << rd_all() << std::endl;
+    std::cout << "Loi: " << s << std::endl;
+    std::cout << "Tai dong " << sc_line() 
+        << ", cot " << sc_col() << std::endl;
+    std::exit(-1);
 }
 
 static void NEXT(enum Token token, const char *error_msg) {
     if (sc_get() != token)
         error(error_msg);
     sc_next();
+}
+
+static void CHECK(enum Token token, const char *error_msg) {
+    if (sc_get() != token)
+        error(error_msg);
 }
 
 static void EXPR();
@@ -166,6 +175,9 @@ static void FOR_STMT() {
 
 static void STATEMENT() {
     if (sc_get() == TOKEN_IDENT) {
+        std::string name = sc_name();
+        if (scope_find(name) == false)
+            error("Ten chua duoc khai bao: " + name);
         sc_next();
         ASSIGN_STMT();
     }
@@ -194,7 +206,12 @@ static void STATEMENT() {
 static void BLOCK();
 
 static void PROCEDURE() {
-    NEXT(TOKEN_IDENT, "Thieu ten thu tuc");
+    CHECK(TOKEN_IDENT, "Thieu ten thu tuc");
+    std::string name = sc_name();
+    sc_next();
+
+    auto scope_ptr = scope_new();
+
     if (sc_get() == TOKEN_LPARENT) {
         sc_next();
 loop_args:
@@ -212,6 +229,14 @@ loop_args:
     NEXT(TOKEN_SEMICOLON, "Thieu dau ; sau khai bao cac tham so thu tuc");
     BLOCK();
     NEXT(TOKEN_SEMICOLON, "Thieu dau ; ket thuc thu tuc");
+
+    scope_pop();
+
+    NameEntry entry;
+    entry.name = std::move(name);
+    entry.type = TYPE_PROC;
+    entry.proc_scope = std::move(scope_ptr);
+    scope_add(std::move(entry));
 }
 
 static void BEGIN() {
@@ -224,13 +249,22 @@ static void BEGIN() {
 }
 
 static void VAR() {
-    NEXT(TOKEN_IDENT, "Thieu ten bien");
+    CHECK(TOKEN_IDENT, "Thieu ten bien");
+    std::string name = sc_name();
+    sc_next();
 
     if (sc_get() == TOKEN_LBRACKET) {
         sc_next();
         NEXT(TOKEN_NUMBER, "Thieu chi so mang");
         NEXT(TOKEN_RBRACKET, "Thieu dau \"]\"");
     }
+
+    NameEntry entry;
+    entry.name = std::move(name);
+    entry.type = TYPE_INT;
+    entry.offset = scope_top()->mem_size;
+    scope_add(std::move(entry));
+    scope_top()->mem_size += 4;
 
     if (sc_get() == TOKEN_COMMA) {
         sc_next();
@@ -245,9 +279,22 @@ static void VAR() {
 }
 
 static void CONST() {
-    NEXT(TOKEN_IDENT, "Thieu ten cho hang");
+    CHECK(TOKEN_IDENT, "Thieu ten cho hang");
+    std::string const_name = sc_name();
+    sc_next();
+
     NEXT(TOKEN_EQ, "Thieu dau =");
-    NEXT(TOKEN_NUMBER, "Thieu so nguyen");
+
+    CHECK(TOKEN_NUMBER, "Thieu so nguyen");
+    int const_num = sc_number();
+    sc_next();
+
+    NameEntry entry;
+    entry.name = std::move(const_name);
+    entry.type = TYPE_CONST;
+    entry.const_value = const_num;
+    scope_add(std::move(entry));
+
     if (sc_get() == TOKEN_COMMA) {
         sc_next();
         CONST();

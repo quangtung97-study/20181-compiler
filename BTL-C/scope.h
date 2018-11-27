@@ -1,22 +1,46 @@
 #ifndef SCOPE_H
 #define SCOPE_H
 
-struct NameEntry {
-    char name[16];
+#include <string>
+#include <vector>
+#include <memory>
+
+enum Type {
+    TYPE_INT,
+    TYPE_PROC,
+    TYPE_CONST,
 };
 
-struct NameList {
-    int size;
-    int capacity;
-    struct NameEntry *data;
+struct Scope;
+
+struct NameEntry {
+    std::string name;
+    enum Type type;
+
+    int const_value = -1;
+    int offset = -1;
+    std::unique_ptr<Scope> proc_scope = nullptr;
 };
 
 struct Scope {
-    struct Scope *parent;
-    int mem_size;
+    struct Scope *parent = nullptr;
+    int mem_size = 0;
+    std::vector<NameEntry> names;
 };
 
-struct Scope *scope_new();
-void scope_delete(struct Scope *s);
+void scope_init();
+
+std::unique_ptr<Scope> scope_new();
+
+void scope_pop();
+
+bool scope_empty();
+
+Scope *scope_top();
+
+void scope_add(NameEntry&& entry);
+
+bool scope_find(const std::string& name);
+
 
 #endif
