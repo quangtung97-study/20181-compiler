@@ -105,7 +105,7 @@ static void CONDITION() {
         else if (sc_get() == TOKEN_NE) 
             sc_next();
         else 
-            error("Thieu mot phep toan so sanh");
+            error("Thieu mot toan tu so sanh");
         EXPR();
     }
 }
