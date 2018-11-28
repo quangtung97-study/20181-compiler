@@ -18,9 +18,9 @@ for if odd procedure program then to var while
 ,;:=.()[]
 
 (*
-
+    quang tung 97
 *)
-tung&
+tung
 
 program tung; 
 var x = 100;

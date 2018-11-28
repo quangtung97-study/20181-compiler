@@ -1,11 +1,10 @@
-#ifndef READER_H
-#define READER_H
+#ifndef READER_HPP
+#define READER_HPP
 
-#include <stdio.h>
+#include <iostream>
 #include <string>
 
-// not automatic closing the file
-void rd_set(FILE *fp);
+void rd_set(std::istream& in);
 
 int rd_get();
 int rd_col();

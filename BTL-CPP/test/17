@@ -15,13 +15,13 @@ end;
 
 begin
     y[20 * 200] := 5 * (-8 + 7 + x * y[5 * 3]);
-    call tung(5, 2, 200);
+    call tung(5, y[2], 200);
     call abcd(5, 4);
     begin
         ;;
     end;
     if x = 20 then 
-        if odd y[3 * 2] then
+        if odd y then
             z := 100
         else 
         begin
@@ -37,4 +37,4 @@ begin
         end;
 end.
 
-(* Dong 18: RVALUE, LVALUE *)
+(* Dong 24: Thieu [] *)

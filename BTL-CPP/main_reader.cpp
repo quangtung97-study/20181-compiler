@@ -1,30 +1,29 @@
-#include "reader.h"
-#include <ctype.h>
-#include <stdio.h>
-#include <iostream>
+#include "reader.hpp"
+#include <fstream>
 
 void show(char ch) {
     if (ch == '\n')
-        std::cout << "LF";
+        std::cout << "LF" << '\t';
     else if (ch == ' ')
-        std::cout << "SPC";
+        std::cout << "SPC" << '\t';
     else if (ch == '\r')
-        std::cout << "CR";
+        std::cout << "CR" << '\t';
     else if (ch == '\0')
-        std::cout << "NULL";
+        std::cout << "NULL" << '\t';
     else {
-        std::cout << ch;
+        std::cout << ch << '\t';
     }
 }
 
 int main() {
-    FILE *fp = fopen("input", "rb");
-    if (fp == NULL) {
+    std::ifstream file("../input", std::ios::binary);
+
+    if (file.fail()) {
         std::cout << "Loi trong qua trinh doc file" << std::endl;
         return -1;
     }
 
-    rd_set(fp);
+    rd_set(file);
     while (rd_get() != '\0') {
         show(rd_get());
         std::cout << "Pos: " << rd_line() 
@@ -34,7 +33,5 @@ int main() {
 
     auto s = rd_all();
     std::cout << s << std::endl;
-
-    fclose(fp);
     return 0;
 }

@@ -1,21 +1,12 @@
-#include "reader.h"
-#include "scanner.h"
-#include "parser.h"
-#include "scope.h"
-#include <cstdlib>
-#include <iostream>
+#include "reader.hpp"
+#include "scanner.hpp"
+#include "parser.hpp"
+#include "scope.hpp"
+#include <sstream>
 
-void ps_init(FILE *fp) {
-    sc_init(fp);
+void ps_init(std::istream& in) {
+    sc_init(in);
     scope_init();
-}
-
-static void error(const std::string& s) {
-    std::cout << rd_all() << std::endl;
-    std::cout << "Loi: " << s << std::endl;
-    std::cout << "Tai dong " << sc_line() 
-        << ", cot " << sc_col() << std::endl;
-    std::exit(-1);
 }
 
 static void NEXT(enum Token token, const char *error_msg) {
@@ -29,69 +20,127 @@ static void CHECK(enum Token token, const char *error_msg) {
         error(error_msg);
 }
 
-static void EXPR();
+static NameEntry *CHECK_VAR() {
+    std::string name = sc_name();
+    auto ep = scope_find(name);
+    if (ep == nullptr) {
+        error("Ten chua duoc khai bao: " + name);
+    }
+    else if (ep->kind != KIND_VAR) {
+        error("Ten khong phai la bien: " + name);
+    }
+    return ep;
+}
 
-static void FACTOR() {
+static void CHECK_NOT_ARRAY(NameEntry *e) {
+    if (e->var_type.is_array)
+        error("Thieu [] truy suat chi so mang");
+}
+
+static NameEntry *CHECK_PROC() {
+    std::string name = sc_name();
+    auto ep = scope_find(name);
+    if (ep == nullptr) {
+        error("Ten chua duoc khai bao: " + name);
+    }
+    else if (ep->kind != KIND_PROC) {
+        error("Ten khong phai la thu tuc: " + name);
+    }
+    return ep;
+}
+
+static ValueCategory EXPR();
+
+static ValueCategory FACTOR() {
+    ValueCategory category = LVALUE;
+
     if (sc_get() == TOKEN_IDENT) {
+        auto ep = CHECK_VAR();
         sc_next();
+
         if (sc_get() == TOKEN_LBRACKET) {
+            if (!ep->var_type.is_array)
+                error("Khong phai la bien mang: " + ep->name);
             sc_next();
+
             EXPR();
             NEXT(TOKEN_RBRACKET, "Thieu \"]\"");
         }
+        else {
+            CHECK_NOT_ARRAY(ep);
+        }
+        category = LVALUE;
     }
     else if (sc_get() == TOKEN_NUMBER) {
         sc_next();
+        category = RVALUE;
     }
     else if (sc_get() == TOKEN_LPARENT) {
         sc_next();
-        EXPR();
+        category = EXPR();
         NEXT(TOKEN_RPARENT, "Thieu \")\"");
     }
     else {
         error("Thieu toan hang");
     }
+
+    return category;
 }
 
-static void TERM() {
-    FACTOR();
+static ValueCategory TERM() {
+    auto category = FACTOR();
 term_loop:
     if (sc_get() == TOKEN_TIMES) {
         sc_next();
+        category = RVALUE;
         FACTOR();
         goto term_loop;
     }
     if (sc_get() == TOKEN_REMAINDER) {
         sc_next();
+        category = RVALUE;
         FACTOR();
         goto term_loop;
     }
     if (sc_get() == TOKEN_DIVIDE) {
         sc_next();
+        category = RVALUE;
         FACTOR();
         goto term_loop;
     }
+
+    return category;
 }
 
-static void EXPR() {
+static ValueCategory EXPR() {
+    ValueCategory category = LVALUE;
     if (sc_get() == TOKEN_PLUS) {
         sc_next();
+        category = RVALUE;
     }
     if (sc_get() == TOKEN_MINUS) {
         sc_next();
+        category = RVALUE;
     }
-    TERM();
+
+    auto term_category = TERM();
+    category = term_category == LVALUE ? category : RVALUE;
+
 expr_loop:
     if (sc_get() == TOKEN_PLUS) {
         sc_next();
+        category = RVALUE;
         TERM();
         goto expr_loop;
     }
     if (sc_get() == TOKEN_MINUS) {
         sc_next();
+        category = RVALUE;
         TERM();
         goto expr_loop;
     }
+
+    return category;
 }
 
 static void CONDITION() {
@@ -122,9 +171,12 @@ static void CONDITION() {
 static void STATEMENT();
 static void BEGIN();
 
-static void ASSIGN_STMT() {
+static void ASSIGN_STMT(NameEntry *e) {
     if (sc_get() == TOKEN_LBRACKET) {
+        if (!e->var_type.is_array)
+            error("Khong phai la bien mang: " + e->name);
         sc_next();
+
         EXPR();
         NEXT(TOKEN_RBRACKET, "Thieu \"]\"");
     }
@@ -134,16 +186,42 @@ static void ASSIGN_STMT() {
 }
 
 static void CALL_STMT() {
-    NEXT(TOKEN_IDENT, "Thieu ten thu tuc duoc goi");
+    CHECK(TOKEN_IDENT, "Thieu ten thu tuc duoc goi");
+    auto ep = CHECK_PROC();
+    sc_next();
+
+    int arg_count = 0;
+
     if (sc_get() == TOKEN_LPARENT) {
         sc_next();
 next_arg:
-        EXPR();
+        auto category = EXPR();
+        const auto& e = ep->proc_type.param_types[arg_count];
+
+        if (e.is_reference && category == RVALUE) {
+            std::ostringstream ss;
+            ss << "\n\tThu tuc: " << ep->name << std::endl;
+            ss << "\tVi tri tham so thu: " << arg_count + 1 << std::endl;
+            ss << "\tCan mot LVALUE, nhung da cung cap mot RVALUE";
+            error(ss.str());
+        }
+
+        arg_count++;
+
         if (sc_get() == TOKEN_COMMA) {
             sc_next();
             goto next_arg;
         }
         NEXT(TOKEN_RPARENT, "Thieu dau \")\"");
+    }
+
+    int param_count = ep->proc_type.param_types.size();
+    if (arg_count != param_count) {
+        std::ostringstream ss;
+        ss << "\n\tSai so tham so goi ham" << std::endl;
+        ss << "\tCan " << param_count << " gia tri" << std::endl;
+        ss << "\tNnhung da cung cap " << arg_count << " gia tri";
+        error(ss.str());
     }
 }
 
@@ -175,11 +253,9 @@ static void FOR_STMT() {
 
 static void STATEMENT() {
     if (sc_get() == TOKEN_IDENT) {
-        std::string name = sc_name();
-        if (scope_find(name) == false)
-            error("Ten chua duoc khai bao: " + name);
+        auto e = CHECK_VAR();
         sc_next();
-        ASSIGN_STMT();
+        ASSIGN_STMT(e);
     }
     else if (sc_get() == TOKEN_CALL) {
         sc_next();
@@ -212,12 +288,25 @@ static void PROCEDURE() {
 
     auto scope_ptr = scope_new();
 
+    int param_count = 0;
     if (sc_get() == TOKEN_LPARENT) {
         sc_next();
+
 loop_args:
-        if (sc_get() == TOKEN_VAR)
+        param_count++;
+        bool is_reference = false;
+
+        if (sc_get() == TOKEN_VAR) {
+            is_reference = true;
             sc_next();
-        NEXT(TOKEN_IDENT, "Thieu ten tham so cua thu tuc");
+        }
+
+        CHECK(TOKEN_IDENT, "Thieu ten tham so cua thu tuc");
+        std::string param_name = sc_name();
+        sc_next();
+
+        scope_add_var(param_name, is_reference);
+
         if (sc_get() == TOKEN_SEMICOLON) {
             sc_next();
             goto loop_args;
@@ -232,11 +321,7 @@ loop_args:
 
     scope_pop();
 
-    NameEntry entry;
-    entry.name = std::move(name);
-    entry.type = TYPE_PROC;
-    entry.proc_scope = std::move(scope_ptr);
-    scope_add(std::move(entry));
+    scope_add_proc(name, param_count, std::move(scope_ptr));
 }
 
 static void BEGIN() {
@@ -253,18 +338,21 @@ static void VAR() {
     std::string name = sc_name();
     sc_next();
 
+    bool is_array = false;
+    int array_size = 0;
+
     if (sc_get() == TOKEN_LBRACKET) {
         sc_next();
-        NEXT(TOKEN_NUMBER, "Thieu chi so mang");
+        is_array = true;
+
+        CHECK(TOKEN_NUMBER, "Thieu chi so mang");
+        array_size = sc_number();
+        sc_next();
+
         NEXT(TOKEN_RBRACKET, "Thieu dau \"]\"");
     }
 
-    NameEntry entry;
-    entry.name = std::move(name);
-    entry.type = TYPE_INT;
-    entry.offset = scope_top()->mem_size;
-    scope_add(std::move(entry));
-    scope_top()->mem_size += 4;
+    scope_add_var(name, false, is_array, array_size);
 
     if (sc_get() == TOKEN_COMMA) {
         sc_next();
@@ -280,20 +368,16 @@ static void VAR() {
 
 static void CONST() {
     CHECK(TOKEN_IDENT, "Thieu ten cho hang");
-    std::string const_name = sc_name();
+    std::string name = sc_name();
     sc_next();
 
     NEXT(TOKEN_EQ, "Thieu dau =");
 
     CHECK(TOKEN_NUMBER, "Thieu so nguyen");
-    int const_num = sc_number();
+    int const_value = sc_number();
     sc_next();
 
-    NameEntry entry;
-    entry.name = std::move(const_name);
-    entry.type = TYPE_CONST;
-    entry.const_value = const_num;
-    scope_add(std::move(entry));
+    scope_add_const(name, const_value);
 
     if (sc_get() == TOKEN_COMMA) {
         sc_next();

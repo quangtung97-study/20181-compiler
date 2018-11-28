@@ -1,7 +1,8 @@
-#ifndef SCANNER_H
-#define SCANNER_H
+#ifndef SCANNER_HPP
+#define SCANNER_HPP
 
-#include <stdio.h>
+#include <iostream>
+#include <string>
 
 enum Token {
     TOKEN_IDENT = 1,
@@ -25,7 +26,7 @@ enum Token {
     END_OF_TOKENS
 };
 
-void sc_init(FILE *fp);
+void sc_init(std::istream& in);
 
 enum Token sc_get();
 const char *sc_name();
@@ -36,5 +37,7 @@ int sc_col();
 void sc_next();
 
 void sc_print(enum Token t);
+
+void error(const std::string& msg);
 
 #endif

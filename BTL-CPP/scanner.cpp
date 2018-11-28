@@ -1,10 +1,6 @@
-#include "reader.h"
-#include "scanner.h"
-#include <cstdlib>
-#include <ctype.h>
-#include <string>
+#include "reader.hpp"
+#include "scanner.hpp"
 #include <cstring>
-#include <iostream>
 
 #define IDENT_NAME_SIZE 10
 #define MAX_DIGIT_COUNT 9
@@ -20,15 +16,18 @@ static int g_number_value;
 
 static int g_line, g_col;
 
-static void error(const char *s) {
+void error(const std::string& s) {
+    std::cout << "===============================================" << std::endl;
+    std::cout << rd_all() << std::endl;
+    std::cout << "===============================================" << std::endl;
     std::cout << "Loi: " << s << std::endl;
     std::cout << "Tai dong " << sc_line()
         << ", cot " << sc_col() << std::endl;
     std::exit(-1);
 }
 
-void sc_init(FILE *fp) {
-    rd_set(fp);
+void sc_init(std::istream& in) {
+    rd_set(in);
     g_name_end = 0;
     g_number_end = 0;
     sc_next();

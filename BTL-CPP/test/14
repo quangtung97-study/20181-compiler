@@ -1,12 +1,12 @@
 program tung;
 const a = 10;
-var x, y[100];
+var x, y[100], z;
 procedure abcd(x; var y; c);
 begin
     x := 20;
 end;
 begin
-    A[20 * 200] := 5 * (-8 + 7 + x * A[5 * 3]);
+    y[20 * 200] := 5 * (-8 + 7 + x * A[5 * 3]);
     call tung;
     call abcd(5, 4);
     begin
@@ -14,15 +14,15 @@ begin
     end;
     if x = 20 then 
         if odd y then
-            a := 100
+            z := 100
         else 
         begin
-            a := 22;
+            z := 22;
             x := 11;
         end;
 
     while x <> 6 do 
-        i := i + 1;
+        x := x + 1;
 
     for n := 0 10 do
         begin
