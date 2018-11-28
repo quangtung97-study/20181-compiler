@@ -1,0 +1,11 @@
+#!/bin/bash
+cd test
+tests=($(ls))
+cd ..
+for test_case in ${tests[@]}; do
+    echo
+    echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    echo "test/$test_case"
+    ./build/main "test/$test_case"
+    echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++"
+done

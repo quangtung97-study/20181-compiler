@@ -33,7 +33,7 @@ static NameEntry *CHECK_VAR() {
 }
 
 static void CHECK_NOT_ARRAY(NameEntry *e) {
-    if (e->var_type.is_array)
+    if (e->kind == KIND_VAR && e->var_type.is_array)
         error("Thieu [] truy suat chi so mang");
 }
 
@@ -55,11 +55,18 @@ static ValueCategory FACTOR() {
     ValueCategory category = LVALUE;
 
     if (sc_get() == TOKEN_IDENT) {
-        auto ep = CHECK_VAR();
+        std::string name = sc_name();
+        auto ep = scope_find(name);
+        if (ep == nullptr) {
+            error("Ten chua duoc khai bao: " + name);
+        }
+        if (ep->kind != KIND_VAR && ep->kind != KIND_CONST) {
+            error("Ten khong phai bien hoac hang: " + name);
+        }
         sc_next();
 
         if (sc_get() == TOKEN_LBRACKET) {
-            if (!ep->var_type.is_array)
+            if (!(ep->kind == KIND_VAR) || !ep->var_type.is_array)
                 error("Khong phai la bien mang: " + ep->name);
             sc_next();
 
@@ -69,7 +76,11 @@ static ValueCategory FACTOR() {
         else {
             CHECK_NOT_ARRAY(ep);
         }
-        category = LVALUE;
+
+        if (ep->kind == KIND_VAR)
+            category = LVALUE;
+        else 
+            category = RVALUE;
     }
     else if (sc_get() == TOKEN_NUMBER) {
         sc_next();

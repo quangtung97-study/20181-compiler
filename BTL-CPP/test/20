@@ -15,7 +15,7 @@ end;
 
 begin
     y[20 * 200] := 5 * (-8 + 7 + x * y[5 * 3]);
-    call tung(5, y[2], tung);
+    call tung(5, max, 200);
     call abcd(5, max);
     begin
         ;;
@@ -37,4 +37,4 @@ begin
         end;
 end.
 
-(* Dong 18: ten khong phai bien hoac hang: tung *)
+(* Dong 18: RVALUE, LVALUE *)

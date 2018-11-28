@@ -1,12 +1,17 @@
 program tung;
 const a = 10;
 var x, y[100];
-procedure abcd(x; var y; c);
+
+procedure tung;
+begin
+end;
+
+procedure abcd(x; c);
 begin
     x := 20;
 end;
 begin
-    y[20 * 200] := 5 * (-8 + 7 + x * A[5 * 3]);
+    y[20 * 200] := 5 * (-8 + 7 + x * y[5 * 3]);
     call tung;
     call abcd(5, 4);
     begin
