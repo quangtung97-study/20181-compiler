@@ -1,0 +1,2 @@
+#!/bin/sh
+fd | grep -E "(cpp|hpp)$" | xargs wc -l
