@@ -3,6 +3,20 @@
 #include <fstream>
 
 void print_scope(Scope *scope) {
+    if (scope->parent != nullptr) {
+        std::cout << "Parameters: " << std::endl;
+    }
+    for (auto& e: scope->params) {
+        std::cout << e.name << ", offset: " << e.offset;
+        std::cout << ", type: " << "int";
+        if (e.var_type == VAR_REF)
+            std::cout << "  ref";
+        std::cout << std::endl;
+    }
+
+    if (scope->parent != nullptr) {
+        std::cout << "Declarations: " << std::endl;
+    }
     for (auto& e: scope->names) {
         if (e.kind == KIND_CONST) {
             std::cout << e.name << " = " << e.const_value << std::endl;
@@ -10,16 +24,14 @@ void print_scope(Scope *scope) {
         else if (e.kind == KIND_VAR) {
             std::cout << e.name << ", offset: " << e.offset;
             std::cout << ", type: " << "int";
-            if (e.var_type.is_array) 
-                std::cout << "[" << e.var_type.array_size << "]";
-            if (e.var_type.is_reference)
-                std::cout << "  ref";
+            if (e.var_type == VAR_ARRAY)
+                std::cout << "[" << e.array_size << "]";
             std::cout << std::endl;
         }
         else if (e.kind == KIND_PROC) {
             std::cout << "=======================================" << std::endl;
             std::cout << "PROCEDURE " << e.name << ": " << 
-                e.proc_type.param_types.size() << " paramters" << std::endl;
+                e.proc_scope->params.size() << " paramters" << std::endl;
             std::cout << "---------------------------------------" << std::endl;
             print_scope(e.proc_scope.get());
             std::cout << "=======================================" << std::endl;

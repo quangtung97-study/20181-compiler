@@ -32,9 +32,30 @@ static NameEntry *CHECK_VAR() {
     return ep;
 }
 
+static NameEntry *CHECK_VAR_CONST() {
+    std::string name = sc_name();
+    auto ep = scope_find(name);
+    if (ep == nullptr) {
+        error("Ten chua duoc khai bao: " + name);
+    }
+    if (ep->kind != KIND_VAR && ep->kind != KIND_CONST) {
+        error("Ten khong phai bien hoac hang: " + name);
+    }
+    return ep;
+}
+
+static void CHECK_IS_ARRAY(NameEntry *e) {
+    if (e->kind == KIND_VAR && e->var_type == VAR_ARRAY)
+        return;
+    error("Khong phai la bien mang: " + e->name);
+}
+
 static void CHECK_NOT_ARRAY(NameEntry *e) {
-    if (e->kind == KIND_VAR && e->var_type.is_array)
-        error("Thieu [] truy suat chi so mang");
+    if (e->kind == KIND_CONST)
+        return;
+    if (e->kind == KIND_VAR && e->var_type != VAR_ARRAY)
+        return;
+    error("Thieu [] truy suat chi so mang");
 }
 
 static NameEntry *CHECK_PROC() {
@@ -55,19 +76,11 @@ static ValueCategory FACTOR() {
     ValueCategory category = LVALUE;
 
     if (sc_get() == TOKEN_IDENT) {
-        std::string name = sc_name();
-        auto ep = scope_find(name);
-        if (ep == nullptr) {
-            error("Ten chua duoc khai bao: " + name);
-        }
-        if (ep->kind != KIND_VAR && ep->kind != KIND_CONST) {
-            error("Ten khong phai bien hoac hang: " + name);
-        }
+        auto ep = CHECK_VAR_CONST();
         sc_next();
 
         if (sc_get() == TOKEN_LBRACKET) {
-            if (!(ep->kind == KIND_VAR) || !ep->var_type.is_array)
-                error("Khong phai la bien mang: " + ep->name);
+            CHECK_IS_ARRAY(ep);
             sc_next();
 
             EXPR();
@@ -92,7 +105,7 @@ static ValueCategory FACTOR() {
         NEXT(TOKEN_RPARENT, "Thieu \")\"");
     }
     else {
-        error("Thieu toan hang");
+        error("Thieu mot Factor");
     }
 
     return category;
@@ -184,12 +197,14 @@ static void BEGIN();
 
 static void ASSIGN_STMT(NameEntry *e) {
     if (sc_get() == TOKEN_LBRACKET) {
-        if (!e->var_type.is_array)
-            error("Khong phai la bien mang: " + e->name);
+        CHECK_IS_ARRAY(e);
         sc_next();
 
         EXPR();
         NEXT(TOKEN_RBRACKET, "Thieu \"]\"");
+    }
+    else {
+        CHECK_NOT_ARRAY(e);
     }
 
     NEXT(TOKEN_ASSIGN, "Thieu dau gan := ");
@@ -202,18 +217,26 @@ static void CALL_STMT() {
     sc_next();
 
     int arg_count = 0;
+    int max_arg_count = ep->proc_scope->params.size();
 
     if (sc_get() == TOKEN_LPARENT) {
         sc_next();
 next_arg:
-        auto category = EXPR();
-        const auto& e = ep->proc_type.param_types[arg_count];
+        if (arg_count == max_arg_count) {
+            std::ostringstream ss;
+            ss << "\n\tThua so doi so goi ham" << std::endl;
+            ss << "\tChi can " << max_arg_count << " doi so";
+            error(ss.str());
+        }
 
-        if (e.is_reference && category == RVALUE) {
+        auto category = EXPR();
+        const auto& e = ep->proc_scope->params[arg_count];
+
+        if (e.var_type == VAR_REF && category == RVALUE) {
             std::ostringstream ss;
             ss << "\n\tThu tuc: " << ep->name << std::endl;
-            ss << "\tVi tri tham so thu: " << arg_count + 1 << std::endl;
-            ss << "\tCan mot LVALUE, nhung da cung cap mot RVALUE";
+            ss << "\tVi tri doi so thu: " << arg_count + 1 << std::endl;
+            ss << "\tCan mot tham bien nhung da cung cap mot gia tri";
             error(ss.str());
         }
 
@@ -226,12 +249,11 @@ next_arg:
         NEXT(TOKEN_RPARENT, "Thieu dau \")\"");
     }
 
-    int param_count = ep->proc_type.param_types.size();
-    if (arg_count != param_count) {
+    if (arg_count < max_arg_count) {
         std::ostringstream ss;
-        ss << "\n\tSai so tham so goi ham" << std::endl;
-        ss << "\tCan " << param_count << " gia tri" << std::endl;
-        ss << "\tNnhung da cung cap " << arg_count << " gia tri";
+        ss << "\n\tThieu so doi so goi ham" << std::endl;
+        ss << "\tCan " << max_arg_count << " gia tri" << std::endl;
+        ss << "\tNhung da cung cap " << arg_count << " gia tri";
         error(ss.str());
     }
 }
@@ -253,7 +275,12 @@ static void WHILE_STMT() {
 }
 
 static void FOR_STMT() {
-    NEXT(TOKEN_IDENT, "Thieu ten bien chay FOR");
+    CHECK(TOKEN_IDENT, "Thieu ten bien chay FOR");
+    auto ep = CHECK_VAR();
+    if (ep->var_type == VAR_ARRAY)
+        error("Khong can mot bien mang");
+    sc_next();
+
     NEXT(TOKEN_ASSIGN, "Thieu phep gan := ");
     EXPR();
     NEXT(TOKEN_TO, "Thieu TO");
@@ -299,14 +326,11 @@ static void PROCEDURE() {
 
     auto scope_ptr = scope_new();
 
-    int param_count = 0;
     if (sc_get() == TOKEN_LPARENT) {
         sc_next();
 
 loop_args:
-        param_count++;
         bool is_reference = false;
-
         if (sc_get() == TOKEN_VAR) {
             is_reference = true;
             sc_next();
@@ -316,7 +340,7 @@ loop_args:
         std::string param_name = sc_name();
         sc_next();
 
-        scope_add_var(param_name, is_reference);
+        scope_add_param(param_name, is_reference);
 
         if (sc_get() == TOKEN_SEMICOLON) {
             sc_next();
@@ -331,8 +355,7 @@ loop_args:
     NEXT(TOKEN_SEMICOLON, "Thieu dau ; ket thuc thu tuc");
 
     scope_pop();
-
-    scope_add_proc(name, param_count, std::move(scope_ptr));
+    scope_add_proc(name, std::move(scope_ptr));
 }
 
 static void BEGIN() {
@@ -349,12 +372,12 @@ static void VAR() {
     std::string name = sc_name();
     sc_next();
 
-    bool is_array = false;
+    VarType var_type = VAR_INT;
     int array_size = 0;
 
     if (sc_get() == TOKEN_LBRACKET) {
         sc_next();
-        is_array = true;
+        var_type = VAR_ARRAY;
 
         CHECK(TOKEN_NUMBER, "Thieu chi so mang");
         array_size = sc_number();
@@ -363,7 +386,7 @@ static void VAR() {
         NEXT(TOKEN_RBRACKET, "Thieu dau \"]\"");
     }
 
-    scope_add_var(name, false, is_array, array_size);
+    scope_add_var(name, var_type, array_size);
 
     if (sc_get() == TOKEN_COMMA) {
         sc_next();

@@ -11,19 +11,15 @@ enum Kind {
     KIND_CONST,
 };
 
-struct VarType {
-    bool is_array;
-    bool is_reference;
-    int array_size;
-};
-
-struct ProcType {
-    std::vector<VarType> param_types;
+enum VarType {
+    VAR_INT,
+    VAR_REF, 
+    VAR_ARRAY,
 };
 
 enum ValueCategory {
     LVALUE,
-    RVALUE
+    RVALUE,
 };
 
 struct Scope;
@@ -38,17 +34,21 @@ struct NameEntry {
     // kind variable
     VarType var_type;
     int offset = -1;
+    int array_size;
 
     // kind procedure
-    ProcType proc_type;
     std::unique_ptr<Scope> proc_scope = nullptr;
 };
 
 struct Scope {
     std::string name;
     struct Scope *parent = nullptr;
-    int mem_size = 0;
+
+    std::vector<NameEntry> params;
+    int param_mem_size = 0;
+
     std::vector<NameEntry> names;
+    int mem_size = 0;
 };
 
 void scope_init();
@@ -60,13 +60,13 @@ void scope_pop();
 Scope *scope_top();
 
 void scope_add_var(const std::string& name, 
-        bool is_reference = false,
-        bool is_array = false, 
-        int array_size = 0);
+        enum VarType var_type, int array_size = 0);
+
+void scope_add_param(const std::string& name, bool is_reference);
 
 void scope_add_const(const std::string& name, int value);
 
-void scope_add_proc(const std::string& name, int param_count,
+void scope_add_proc(const std::string& name,
         std::unique_ptr<Scope> scope);
 
 

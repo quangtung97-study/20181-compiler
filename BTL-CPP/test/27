@@ -1,6 +1,6 @@
 program tung;
 const a = 10, max = 200;
-var x, y[10], z;
+var x, y[10], z, n;
 
 procedure tung(x; var y; c);
 var m, n;
@@ -9,13 +9,16 @@ begin
 end;
 
 procedure abcd(u; v);
+const pi = 123;
+var k, j, mang[20], w;
 begin
     u := v + 10;
 end;
 
 begin
     y[20 * 200] := 5 * (-8 + 7 + x * y[5 * 3]);
-    call tung(5, y[2], 200);
+    call tung(5, (y[2]), 200);
+    call tung(5, (x), 200);
     call abcd(5, max);
     begin
         ;;
@@ -36,5 +39,3 @@ begin
         begin
         end;
 end.
-    (* Dong 35: Ten chua duoc khai bao *)
-

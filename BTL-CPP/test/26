@@ -1,0 +1,10 @@
+program tung;
+const a = 10, max = 200;
+var x, y[10], z, i[10];
+
+begin
+    for i := 0 to x + 20 do  // dong 6
+    begin
+    end;
+end.
+    (* Dong 6: Khong can mot bien mang *)
