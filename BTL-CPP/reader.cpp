@@ -40,14 +40,14 @@ static void __next() {
     if (g_first == g_last) {
         size_t amount = std::fread(
                 buff_begin(), 1, BUFF_SIZE, g_file);
-        if (amount > 0) {
+        if (amount == BUFF_SIZE) {
             g_first = buff_begin();
             g_last = g_first + amount;
         }
         else {
             g_first = buff_begin();
-            g_last = g_first + 1;
-            *g_first = '\0';
+            g_last = g_first + amount + 1;
+            *(g_last - 1) = '\0';
         }
     }
 }

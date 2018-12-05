@@ -54,8 +54,8 @@ int main(int argc, char **argv) {
     ps_init(file);
     ps_parse();
 
-    std::cout << "Nhan dien thanh cong!!!\n" << std::endl;
+    std::cout << "Nhan dien thanh cong!!!" << std::endl;
 
-    print_scope(scope_top());
+    // print_scope(scope_top());
     return 0;
 }

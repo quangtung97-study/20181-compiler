@@ -215,8 +215,10 @@ static void START() {
     while (isspace(rd_get()))
         rd_next();
 
-    if (rd_get() == '\0')
+    if (rd_get() == '\0') {
+        put_token(END_OF_TOKENS);
         return;
+    }
 
     g_line = rd_line();
     g_col_begin = rd_col();
@@ -305,8 +307,6 @@ static void START() {
 
 void sc_next() {
     START();
-    if (rd_get() == '\0')
-        g_token = END_OF_TOKENS;
 }
 
 #define CASE(token, str) \
