@@ -1,16 +1,17 @@
 #ifndef READER_HPP
 #define READER_HPP
 
-#include <iostream>
 #include <string>
+#include <cstdio>
 
-void rd_set(std::istream& in);
+void rd_set(FILE *file);
 
 int rd_get();
 int rd_col();
 int rd_line();
 
-std::string rd_all();
+void rd_reset();
+bool rd_line(std::string& line);
 
 void rd_next();
 

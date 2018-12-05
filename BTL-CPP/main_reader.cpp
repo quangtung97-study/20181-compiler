@@ -1,5 +1,5 @@
 #include "reader.hpp"
-#include <fstream>
+#include <iostream>
 
 void show(char ch) {
     if (ch == '\n')
@@ -16,9 +16,9 @@ void show(char ch) {
 }
 
 int main() {
-    std::ifstream file("../input", std::ios::binary);
+    FILE *file = std::fopen("../input", "rb");
 
-    if (file.fail()) {
+    if (!file) {
         std::cout << "Loi trong qua trinh doc file" << std::endl;
         return -1;
     }
@@ -31,7 +31,10 @@ int main() {
         rd_next();
     }
 
-    auto s = rd_all();
-    std::cout << s << std::endl;
+    rd_reset();
+    std::string line;
+    while (rd_line(line)) {
+        std::cout << line << std::endl;
+    }
     return 0;
 }

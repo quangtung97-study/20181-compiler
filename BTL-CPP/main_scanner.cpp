@@ -1,13 +1,13 @@
 #include "scanner.hpp"
-#include <fstream>
+#include <iostream>
 
 int main(int argc, char **argv) {
     if (argc <= 1) {
         std::cout << "Thieu tham so" << std::endl;
         return -1;
     }
-    std::ifstream file(argv[1], std::ios::binary);
-    if (file.fail()) {
+    FILE *file = std::fopen(argv[1], "rb");
+    if (!file) {
         std::cout << "Khong the doc file" << std::endl;
         return -1;
     }

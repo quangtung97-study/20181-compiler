@@ -1,7 +1,7 @@
 #ifndef SCANNER_HPP
 #define SCANNER_HPP
 
-#include <iostream>
+#include <cstdio>
 #include <string>
 
 enum Token {
@@ -26,13 +26,14 @@ enum Token {
     END_OF_TOKENS
 };
 
-void sc_init(std::istream& in);
+void sc_init(FILE *file);
 
 enum Token sc_get();
 const char *sc_name();
 int sc_number();
 int sc_line();
-int sc_col();
+int sc_col_begin();
+int sc_col_end();
 
 void sc_next();
 

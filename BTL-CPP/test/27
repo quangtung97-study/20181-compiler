@@ -17,7 +17,7 @@ end;
 
 begin
     y[20 * 200] := 5 * (-8 + 7 + x * y[5 * 3]);
-    call tung(5, (y[2]), 200);
+    call tung(5, (y[2]), 200)
     call tung(5, (x), 200);
     call abcd(5, max);
     begin

@@ -1,6 +1,6 @@
 #include "parser.hpp"
 #include "scope.hpp"
-#include <fstream>
+#include <iostream>
 
 void print_scope(Scope *scope) {
     if (scope->parent != nullptr) {
@@ -44,8 +44,9 @@ int main(int argc, char **argv) {
         std::cout << "Thieu tham so" << std::endl;
         return -1;
     }
-    std::ifstream file(argv[1], std::ios::binary);
-    if (file.fail()) {
+
+    FILE *file = std::fopen(argv[1], "rb");
+    if (file == NULL) {
         std::cout << "Khong the doc file" << std::endl;
         return -1;
     }

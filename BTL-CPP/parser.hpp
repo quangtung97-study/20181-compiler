@@ -1,9 +1,9 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
-#include <iostream>
+#include <cstdio>
 
-void ps_init(std::istream& in);
+void ps_init(FILE *file);
 
 void ps_parse();
 

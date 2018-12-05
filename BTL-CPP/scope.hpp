@@ -53,7 +53,7 @@ struct Scope {
 
 void scope_init();
 
-std::unique_ptr<Scope> scope_new();
+void scope_new(const std::string& proc_name);
 
 void scope_pop();
 
@@ -65,10 +65,6 @@ void scope_add_var(const std::string& name,
 void scope_add_param(const std::string& name, bool is_reference);
 
 void scope_add_const(const std::string& name, int value);
-
-void scope_add_proc(const std::string& name,
-        std::unique_ptr<Scope> scope);
-
 
 NameEntry *scope_find(const std::string& name);
 

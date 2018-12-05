@@ -1,6 +1,8 @@
 #include "reader.hpp"
 #include "scanner.hpp"
 #include <cstring>
+#include <iostream>
+#include <iomanip>
 
 #define IDENT_NAME_SIZE 10
 #define MAX_DIGIT_COUNT 9
@@ -14,20 +16,61 @@ static char g_number[32];
 static int g_number_end;
 static int g_number_value;
 
-static int g_line, g_col;
+static int g_line, g_col_begin, g_col_end;
+
+static int digit_count(int num) {
+    if (num == 0)
+        return 1;
+
+    int count = 0;
+    while (num) {
+        num /= 10;
+        count++;
+    }
+    return count;
+}
 
 void error(const std::string& s) {
+    int line_error = g_line;
+
+    rd_reset();
+    std::string line;
+    int line_number = 0;
+    while (rd_line(line)) {
+        line_number++;
+        std::cout << std::setw(digit_count(line_error))
+            << line_number << "| "
+            << line << std::endl;
+        if (line_number == line_error)
+            break;
+    }
+
+    int begin_code = digit_count(line_error) + 2;
+    std::string prompt;
+    prompt.resize(begin_code, ' ');
+    prompt += line;
+    int end = begin_code + g_col_begin - 1;
+    for (int i = begin_code; i < end; i++)
+        if (prompt[i] != '\t') {
+            prompt[i] = ' ';
+        }
+    prompt.erase(prompt.begin() + end, prompt.end());
+
+    std::cout << prompt;
+
+    prompt.clear();
+    prompt.resize(g_col_end - g_col_begin, '^');
+    std::cout << prompt << std::endl;
+
     std::cout << "===============================================" << std::endl;
-    std::cout << rd_all() << std::endl;
-    std::cout << "===============================================" << std::endl;
-    std::cout << "Loi: " << s << std::endl;
+    std::cout << "LOI: " << s << std::endl;
     std::cout << "Tai dong " << sc_line()
-        << ", cot " << sc_col() << std::endl;
+        << ", cot " << sc_col_begin() << std::endl;
     std::exit(-1);
 }
 
-void sc_init(std::istream& in) {
-    rd_set(in);
+void sc_init(FILE *file) {
+    rd_set(file);
     g_name_end = 0;
     g_number_end = 0;
     sc_next();
@@ -41,8 +84,12 @@ int sc_line() {
     return g_line;
 }
 
-int sc_col() {
-    return g_col;
+int sc_col_begin() {
+    return g_col_begin;
+}
+
+int sc_col_end() {
+    return g_col_end;
 }
 
 static void put_name(char ch) {
@@ -96,6 +143,7 @@ static void NAME() {
         rd_next();
     }
     name_end();
+    g_col_end = rd_col();
 
     IF_KEYWORD("begin", TOKEN_BEGIN);
     else IF_KEYWORD("call", TOKEN_CALL);
@@ -171,7 +219,8 @@ static void START() {
         return;
 
     g_line = rd_line();
-    g_col = rd_col();
+    g_col_begin = rd_col();
+    g_col_end = g_col_begin + 1;
 
     if (isalpha(rd_get())) {
         NAME();
@@ -201,10 +250,12 @@ static void START() {
         if (rd_get() == '>') {
             rd_next();
             put_token(TOKEN_NE);
+            g_col_end = g_col_begin + 2;
         }
         else if (rd_get() == '=') {
             rd_next();
             put_token(TOKEN_LE);
+            g_col_end = g_col_begin + 2;
         }
         else {
             put_token(TOKEN_LT);
@@ -215,6 +266,7 @@ static void START() {
         if (rd_get() == '=') {
             rd_next();
             put_token(TOKEN_GE);
+            g_col_end = g_col_begin + 2;
         }
         else {
             put_token(TOKEN_GT);
@@ -244,6 +296,7 @@ static void START() {
             error("Thieu dau = ");
         rd_next();
         put_token(TOKEN_ASSIGN);
+        g_col_end = g_col_begin + 2;
     }
     else {
         error("Khong nhan dien duoc ki tu");

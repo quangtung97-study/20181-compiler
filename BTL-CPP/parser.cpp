@@ -4,8 +4,8 @@
 #include "scope.hpp"
 #include <sstream>
 
-void ps_init(std::istream& in) {
-    sc_init(in);
+void ps_init(FILE *file) {
+    sc_init(file);
     scope_init();
 }
 
@@ -324,7 +324,7 @@ static void PROCEDURE() {
     std::string name = sc_name();
     sc_next();
 
-    auto scope_ptr = scope_new();
+    scope_new(name);
 
     if (sc_get() == TOKEN_LPARENT) {
         sc_next();
@@ -355,7 +355,16 @@ loop_args:
     NEXT(TOKEN_SEMICOLON, "Thieu dau ; ket thuc thu tuc");
 
     scope_pop();
-    scope_add_proc(name, std::move(scope_ptr));
+}
+
+typedef const Token *Iterator;
+static Iterator find_token(Iterator first, 
+        Iterator last, Token token) 
+{
+    for (;first != last; ++first)
+        if (*first == token)
+            return first;
+    return last;
 }
 
 static void BEGIN() {
@@ -364,7 +373,22 @@ static void BEGIN() {
         sc_next();
         STATEMENT();
     }
-    NEXT(TOKEN_END, "Thieu ; hoac END");
+    if (sc_get() == TOKEN_END) {
+        sc_next();
+        return;
+    }
+    
+    Token tokens[] = {
+        TOKEN_IDENT, TOKEN_CALL, TOKEN_BEGIN, 
+        TOKEN_IF, TOKEN_WHILE, TOKEN_FOR
+    };
+
+    auto find_it = find_token(
+            std::begin(tokens), std::end(tokens), sc_get());
+    if (find_it != std::end(tokens))
+        error("Thieu ;");
+    else
+        error("Thieu END");
 }
 
 static void VAR() {

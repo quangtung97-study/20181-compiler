@@ -2,9 +2,13 @@ program tung;
 const a = 10, max = 200;
 var x, y[10], z, i[10];
 
+procedure tung(x; var y);
 begin
-    for i := 0 to x + 20 do  // dong 6
+    call tung(10, max);
+end;
+
+begin
+    for z := 0 to x + 20 do
     begin
     end;
 end.
-    (* Dong 6: Khong can mot bien mang *)
