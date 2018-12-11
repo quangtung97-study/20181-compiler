@@ -1,5 +1,4 @@
 #include "reader.hpp"
-#include <algorithm>
 
 #define BUFF_SIZE 1024
 

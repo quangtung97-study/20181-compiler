@@ -171,6 +171,7 @@ static void NUMBER() {
         rd_next();
     }
     number_end();
+    g_col_end = rd_col();
     put_token(TOKEN_NUMBER);
 }
 
