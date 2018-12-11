@@ -4,6 +4,11 @@ var x, y[10], z, n;
 
 procedure tung(x; var y; c);
 var m, n;
+    procedure ngan(var u; v);
+    begin
+        call ngan(u, 5);
+        call tung(5, u, 6);
+    end;
 begin
     m := 20;
 end;

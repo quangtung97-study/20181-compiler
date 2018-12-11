@@ -7,6 +7,7 @@ add_executable(main
     scope.cpp
     scanner.cpp
     reader.cpp
+    assembly.cpp
     )
 
 add_executable(main_scanner
@@ -18,4 +19,13 @@ add_executable(main_scanner
 add_executable(main_reader
     main_reader.cpp
     reader.cpp
+    )
+
+add_executable(main_assembly
+    main_assembly.cpp
+    assembly.cpp
+    )
+
+add_executable(vm
+    vm.cpp
     )
