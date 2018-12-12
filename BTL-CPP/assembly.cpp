@@ -2,14 +2,14 @@
 #include <vector>
 
 std::vector<Instruction> g_instructions;
-int g_main_addr;
 
 void as_init() {
     g_instructions.clear();
+    as_jmp();
 }
 
 void as_set_main(int addr) {
-    g_main_addr = addr;
+    g_instructions[0].p = addr;
 }
 
 void as_set_jmp_addr(int i, int addr) {
@@ -22,8 +22,6 @@ int as_code_addr() {
 void as_set_main(int addr);
 
 void as_save(FILE *file) {
-    std::fwrite(&g_main_addr, sizeof(int), 1, file);
-
     std::fwrite(
             g_instructions.data(), 
             sizeof(Instruction),

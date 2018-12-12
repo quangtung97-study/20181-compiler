@@ -39,6 +39,7 @@ static void SL_CALLING(int addr) {
 }
 
 static void run(const std::vector<Instruction>& instructions) {
+    pc = 0;
     sp = -1;
     bp = 0;
 
@@ -225,9 +226,6 @@ int main(int argc, char **argv) {
 
     Instruction buff[MAX_ELEM];
     std::vector<Instruction> instructions;
-
-    std::fread(&pc, sizeof(pc), 1, file);
-
     while (true) {
         int amount = std::fread(buff, 
                 sizeof(Instruction), MAX_ELEM, file);
