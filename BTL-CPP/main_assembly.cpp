@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    as_init(file);
+    as_init();
 
     as_inc(1);
     as_load_const(0);
@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     as_dec(1);
     as_halt();
 
-    as_save();
+    as_save(file);
 
     std::fclose(file);
     return 0;

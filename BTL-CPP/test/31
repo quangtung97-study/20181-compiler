@@ -1,0 +1,13 @@
+program tung;
+var a, array[10], b;
+procedure tung(var n);
+begin
+    n := b + 6;
+end;
+
+begin
+    a := 3 + 4;
+    b := 11;
+    call tung(a);
+    a := a + 1;
+end.

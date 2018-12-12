@@ -38,6 +38,7 @@ struct NameEntry {
 
     // kind procedure
     std::unique_ptr<Scope> proc_scope = nullptr;
+    int proc_addr;
 };
 
 struct Scope {
@@ -66,6 +67,16 @@ void scope_add_param(const std::string& name, bool is_reference);
 
 void scope_add_const(const std::string& name, int value);
 
-NameEntry *scope_find(const std::string& name);
+struct FindResult {
+    NameEntry *ep;
+    bool is_param;
+    int mem_size;
+    int param_mem_size;
+    int depth;
+};
+
+FindResult scope_find(const std::string& name);
+
+int scope_mem_size();
 
 #endif

@@ -1,6 +1,11 @@
 #ifndef OPCODE_HPP
 #define OPCODE_HPP
 
+#define RA_OFFSET -1
+#define BP_OFFSET -2
+#define SL_OFFSET -3
+#define CALL_SIZE 3
+
 enum OpCode {
     OP_LA, OP_LV, OP_LC, OP_LI,
 
@@ -20,6 +25,7 @@ enum OpCode {
 
     OP_CV,
 
+    OP_ODD,
     OP_EQ, OP_NE, OP_GT, OP_LT, OP_GE, OP_LE,
 };
 

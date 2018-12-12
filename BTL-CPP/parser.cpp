@@ -2,6 +2,7 @@
 #include "scanner.hpp"
 #include "parser.hpp"
 #include "scope.hpp"
+#include "assembly.hpp"
 #include <sstream>
 
 void ps_init(FILE *file) {
@@ -20,28 +21,28 @@ static void CHECK(enum Token token, const char *error_msg) {
         error(error_msg);
 }
 
-static NameEntry *CHECK_VAR() {
+static FindResult CHECK_VAR() {
     std::string name = sc_name();
-    auto ep = scope_find(name);
-    if (ep == nullptr) {
+    auto find = scope_find(name);
+    if (find.ep == nullptr) {
         error("Ten chua duoc khai bao: " + name);
     }
-    else if (ep->kind != KIND_VAR) {
+    else if (find.ep->kind != KIND_VAR) {
         error("Ten khong phai la bien: " + name);
     }
-    return ep;
+    return find;
 }
 
-static NameEntry *CHECK_VAR_CONST() {
+static FindResult CHECK_VAR_CONST() {
     std::string name = sc_name();
-    auto ep = scope_find(name);
-    if (ep == nullptr) {
+    auto find = scope_find(name);
+    if (find.ep == nullptr) {
         error("Ten chua duoc khai bao: " + name);
     }
-    if (ep->kind != KIND_VAR && ep->kind != KIND_CONST) {
+    if (find.ep->kind != KIND_VAR && find.ep->kind != KIND_CONST) {
         error("Ten khong phai bien hoac hang: " + name);
     }
-    return ep;
+    return find;
 }
 
 static void CHECK_IS_ARRAY(NameEntry *e) {
@@ -58,46 +59,69 @@ static void CHECK_NOT_ARRAY(NameEntry *e) {
     error("Thieu [] truy suat chi so mang");
 }
 
-static NameEntry *CHECK_PROC() {
+static FindResult CHECK_PROC() {
     std::string name = sc_name();
-    auto ep = scope_find(name);
-    if (ep == nullptr) {
+    auto find = scope_find(name);
+    if (find.ep == nullptr) {
         error("Ten chua duoc khai bao: " + name);
     }
-    else if (ep->kind != KIND_PROC) {
+    else if (find.ep->kind != KIND_PROC) {
         error("Ten khong phai la thu tuc: " + name);
     }
-    return ep;
+    return find;
 }
 
 static ValueCategory EXPR();
 
+static void load_variable(FindResult find) {
+    int offset = find.ep->offset;
+
+    if (find.is_param) 
+        offset -= CALL_SIZE + find.param_mem_size;
+
+    if (find.ep->var_type == VAR_REF)
+        as_load_value(find.depth, offset);
+    else
+        as_load_addr(find.depth, offset);
+}
+
 static ValueCategory FACTOR() {
-    ValueCategory category = LVALUE;
+    ValueCategory category;
 
     if (sc_get() == TOKEN_IDENT) {
-        auto ep = CHECK_VAR_CONST();
+        auto find = CHECK_VAR_CONST();
         sc_next();
 
         if (sc_get() == TOKEN_LBRACKET) {
-            CHECK_IS_ARRAY(ep);
+            category = LVALUE;
+
+            CHECK_IS_ARRAY(find.ep);
+            load_variable(find);
             sc_next();
 
-            EXPR();
+            int category = EXPR();
+            if (category == LVALUE)
+                as_load_indirect();
+
             NEXT(TOKEN_RBRACKET, "Thieu \"]\"");
+            as_add();
         }
         else {
-            CHECK_NOT_ARRAY(ep);
+            CHECK_NOT_ARRAY(find.ep);
+            if (find.ep->kind == KIND_CONST) {
+                category = RVALUE;
+                as_load_const(find.ep->const_value);
+            }
+            else {
+                category = LVALUE;
+                load_variable(find);
+            }
         }
-
-        if (ep->kind == KIND_VAR)
-            category = LVALUE;
-        else 
-            category = RVALUE;
     }
     else if (sc_get() == TOKEN_NUMBER) {
-        sc_next();
         category = RVALUE;
+        as_load_const(sc_number());
+        sc_next();
     }
     else if (sc_get() == TOKEN_LPARENT) {
         sc_next();
@@ -105,6 +129,7 @@ static ValueCategory FACTOR() {
         NEXT(TOKEN_RPARENT, "Thieu \")\"");
     }
     else {
+        category = LVALUE;
         error("Thieu mot Factor");
     }
 
@@ -116,20 +141,47 @@ static ValueCategory TERM() {
 term_loop:
     if (sc_get() == TOKEN_TIMES) {
         sc_next();
+        
+        if (category == LVALUE)
+            as_load_indirect();
+
+        category = FACTOR();
+        if (category == LVALUE)
+            as_load_indirect();
+
+        as_mul();
+
         category = RVALUE;
-        FACTOR();
         goto term_loop;
     }
     if (sc_get() == TOKEN_REMAINDER) {
         sc_next();
+
+        if (category == LVALUE)
+            as_load_indirect();
+
+        category = FACTOR();
+        if (category == LVALUE)
+            as_load_indirect();
+
+        as_mod();
+
         category = RVALUE;
-        FACTOR();
         goto term_loop;
     }
     if (sc_get() == TOKEN_DIVIDE) {
         sc_next();
+
+        if (category == LVALUE)
+            as_load_indirect();
+        
+        category = FACTOR();
+        if (category == LVALUE)
+            as_load_indirect();
+
+        as_div();
+
         category = RVALUE;
-        FACTOR();
         goto term_loop;
     }
 
@@ -137,30 +189,58 @@ term_loop:
 }
 
 static ValueCategory EXPR() {
-    ValueCategory category = LVALUE;
+    ValueCategory category;
+    bool negate = false;
+    bool lvalue_to_rvalue = false;
+
     if (sc_get() == TOKEN_PLUS) {
         sc_next();
-        category = RVALUE;
+        lvalue_to_rvalue = true;
     }
     if (sc_get() == TOKEN_MINUS) {
         sc_next();
-        category = RVALUE;
+        lvalue_to_rvalue = true;
+        negate = true;
     }
 
-    auto term_category = TERM();
-    category = term_category == LVALUE ? category : RVALUE;
+    category = TERM();
+    if (lvalue_to_rvalue) {
+        if (category == LVALUE)
+            as_load_indirect();
+
+        category = RVALUE;
+
+        if (negate)
+            as_neg();
+    }
 
 expr_loop:
     if (sc_get() == TOKEN_PLUS) {
         sc_next();
+
+        if (category == LVALUE)
+            as_load_indirect();
+
+        category = TERM();
+        if (category == LVALUE)
+            as_load_indirect();
+
         category = RVALUE;
-        TERM();
+        as_add();
         goto expr_loop;
     }
     if (sc_get() == TOKEN_MINUS) {
         sc_next();
+
+        if (category == LVALUE)
+            as_load_indirect();
+
+        category = TERM();
+        if (category == LVALUE)
+            as_load_indirect();
+
         category = RVALUE;
-        TERM();
+        as_sub();
         goto expr_loop;
     }
 
@@ -170,54 +250,101 @@ expr_loop:
 static void CONDITION() {
     if (sc_get() == TOKEN_ODD) {
         sc_next();
-        EXPR();
+        auto category = EXPR();
+        if (category == LVALUE)
+            as_load_indirect();
+        as_odd();
     }
     else {
-        EXPR();
-        if (sc_get() == TOKEN_EQ)
+        auto category = EXPR();
+        if (category == LVALUE)
+            as_load_indirect();
+
+        enum Token token = TOKEN_END;
+        if (sc_get() == TOKEN_EQ) {
+            token = TOKEN_EQ;
             sc_next();
-        else if (sc_get() == TOKEN_GT)
+        }
+        else if (sc_get() == TOKEN_GT) {
+            token = TOKEN_GT;
             sc_next();
-        else if (sc_get() == TOKEN_GE)
+        }
+        else if (sc_get() == TOKEN_GE) {
+            token = TOKEN_GE;
             sc_next();
-        else if (sc_get() == TOKEN_LT)
+        }
+        else if (sc_get() == TOKEN_LT) {
+            token = TOKEN_LT;
             sc_next();
-        else if (sc_get() == TOKEN_LE)
+        }
+        else if (sc_get() == TOKEN_LE) {
+            token = TOKEN_LE;
             sc_next();
-        else if (sc_get() == TOKEN_NE) 
+        }
+        else if (sc_get() == TOKEN_NE) {
+            token = TOKEN_NE;
             sc_next();
-        else 
+        }
+        else {
             error("Thieu mot toan tu so sanh");
-        EXPR();
+        }
+
+        category = EXPR();
+        if (category == LVALUE)
+            as_load_indirect();
+
+        if (token == TOKEN_EQ) 
+            as_eq();
+        else if (token == TOKEN_GT) 
+            as_gt();
+        else if (token == TOKEN_GE) 
+            as_ge();
+        else if (token == TOKEN_LT) 
+            as_lt();
+        else if (token == TOKEN_LE) 
+            as_le();
+        else if (token == TOKEN_NE) 
+            as_ne();
     }
 }
 
 static void STATEMENT();
 static void BEGIN();
 
-static void ASSIGN_STMT(NameEntry *e) {
+static void ASSIGN_STMT(FindResult find) {
     if (sc_get() == TOKEN_LBRACKET) {
-        CHECK_IS_ARRAY(e);
+        CHECK_IS_ARRAY(find.ep);
+        load_variable(find);
         sc_next();
 
-        EXPR();
+        auto category = EXPR();
+        if (category == LVALUE)
+            as_load_indirect();
+
+        as_add();
+
         NEXT(TOKEN_RBRACKET, "Thieu \"]\"");
     }
     else {
-        CHECK_NOT_ARRAY(e);
+        CHECK_NOT_ARRAY(find.ep);
+        load_variable(find);
     }
 
     NEXT(TOKEN_ASSIGN, "Thieu dau gan := ");
-    EXPR();
+    auto category = EXPR();
+    if (category == LVALUE)
+        as_load_indirect();
+
+    as_store();
 }
 
 static void CALL_STMT() {
     CHECK(TOKEN_IDENT, "Thieu ten thu tuc duoc goi");
-    auto ep = CHECK_PROC();
+    auto find = CHECK_PROC();
     sc_next();
 
     int arg_count = 0;
-    int max_arg_count = ep->proc_scope->params.size();
+    int max_arg_count = find.ep->proc_scope->params.size();
 
     if (sc_get() == TOKEN_LPARENT) {
         sc_next();
@@ -230,15 +357,18 @@ next_arg:
         }
 
         auto category = EXPR();
-        const auto& e = ep->proc_scope->params[arg_count];
+        const auto& e = find.ep->proc_scope->params[arg_count];
 
         if (e.var_type == VAR_REF && category == RVALUE) {
             std::ostringstream ss;
-            ss << "\n\tThu tuc: " << ep->name << std::endl;
+            ss << "\n\tThu tuc: " << find.ep->name << std::endl;
             ss << "\tVi tri doi so thu: " << arg_count + 1 << std::endl;
             ss << "\tCan mot tham bien nhung da cung cap mot gia tri";
             error(ss.str());
         }
+
+        if (e.var_type == VAR_INT && category == LVALUE)
+            as_load_indirect();
 
         arg_count++;
 
@@ -256,6 +386,8 @@ next_arg:
         ss << "\tNhung da cung cap " << arg_count << " gia tri";
         error(ss.str());
     }
+
+    as_call(find.depth, find.ep->proc_addr);
 }
 
 static void IF_STMT() {
@@ -276,8 +408,8 @@ static void WHILE_STMT() {
 
 static void FOR_STMT() {
     CHECK(TOKEN_IDENT, "Thieu ten bien chay FOR");
-    auto ep = CHECK_VAR();
-    if (ep->var_type == VAR_ARRAY)
+    auto find = CHECK_VAR();
+    if (find.ep->var_type == VAR_ARRAY)
         error("Khong can mot bien mang");
     sc_next();
 
@@ -291,9 +423,9 @@ static void FOR_STMT() {
 
 static void STATEMENT() {
     if (sc_get() == TOKEN_IDENT) {
-        auto e = CHECK_VAR();
+        auto find = CHECK_VAR();
         sc_next();
-        ASSIGN_STMT(e);
+        ASSIGN_STMT(find);
     }
     else if (sc_get() == TOKEN_CALL) {
         sc_next();
@@ -325,6 +457,8 @@ static void PROCEDURE() {
     sc_next();
 
     scope_new(name);
+    auto find = scope_find(name);
+    find.ep->proc_addr = as_code_addr();
 
     if (sc_get() == TOKEN_LPARENT) {
         sc_next();
@@ -355,6 +489,7 @@ loop_args:
     NEXT(TOKEN_SEMICOLON, "Thieu dau ; ket thuc thu tuc");
 
     scope_pop();
+    as_ret();
 }
 
 typedef const Token *Iterator;
@@ -464,6 +599,9 @@ static void BLOCK() {
         sc_next();
         PROCEDURE();
     }
+
+    as_set_main(as_code_addr());
+    as_inc(scope_mem_size());
     
     if (sc_get() == TOKEN_BEGIN) {
         sc_next();
@@ -472,6 +610,8 @@ static void BLOCK() {
     else {
         error("Thieu BEGIN");
     }
+
+    as_dec(scope_mem_size());
 }
 
 static void PROGRAM() {
@@ -480,6 +620,7 @@ static void PROGRAM() {
     NEXT(TOKEN_SEMICOLON, "Thieu dau cham phay");
     BLOCK();
     NEXT(TOKEN_PERIOD, "Thieu dau cham");
+    as_halt();
 }
 
 void ps_parse() {

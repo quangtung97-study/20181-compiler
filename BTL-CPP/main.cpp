@@ -1,5 +1,6 @@
 #include "parser.hpp"
 #include "scope.hpp"
+#include "assembly.hpp"
 #include <iostream>
 
 void print_scope(Scope *scope) {
@@ -51,11 +52,24 @@ int main(int argc, char **argv) {
         return -1;
     }
 
+    as_init();
     ps_init(file);
     ps_parse();
 
     std::cout << "Nhan dien thanh cong!!!" << std::endl;
 
-    // print_scope(scope_top());
+    FILE *output;
+    if (argc >= 3) {
+        output = std::fopen(argv[2], "wb");
+    }
+    else {
+        output = std::fopen("a.out", "wb");
+    }
+    as_save(output);
+    std::fclose(output);
+
+    print_scope(scope_top());
+    
+    std::fclose(file);
     return 0;
 }

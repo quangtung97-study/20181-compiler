@@ -84,10 +84,10 @@ void scope_add_var(const std::string& name,
     if (var_type == VAR_ARRAY) {
         if (array_size <= 0)
             error("So luong phan tu mang khong cho phep: " + name);
-        g_current->mem_size += array_size * 4;
+        g_current->mem_size += array_size;
     }
     else
-        g_current->mem_size += 4;
+        g_current->mem_size += 1;
 
     scope_add(std::move(entry));
 }
@@ -107,9 +107,9 @@ void scope_add_param(const std::string& name, bool is_reference)
 
     entry.offset = g_current->param_mem_size;
     if (is_reference)
-        g_current->param_mem_size += 4;
+        g_current->param_mem_size += 1;
     else
-        g_current->param_mem_size += 4;
+        g_current->param_mem_size += 1;
 
     scope_add_param(std::move(entry));
 }
@@ -123,16 +123,43 @@ void scope_add_const(const std::string& name, int value) {
     scope_add(std::move(entry));
 }
 
-NameEntry *scope_find(const std::string& name) {
+static FindResult find_result(
+        NameEntry &e, Scope *scope, 
+        int depth, bool is_param)
+{
+    FindResult result;
+    result.ep = &e;
+    result.is_param = is_param;
+    result.depth = depth;
+    result.mem_size = scope->mem_size;
+    result.param_mem_size = scope->param_mem_size;
+    return result;
+}
+
+static FindResult find_null_result() {
+    FindResult result;
+    result.ep = nullptr;
+    return result;
+}
+
+FindResult scope_find(const std::string& name) {
     Scope *current = scope_top();
+    int depth = 0;
     while (current != nullptr) {
-        for (auto& e: current->names)
+        for (auto& e: current->names) 
             if (e.name == name)
-                return &e;
+                return find_result(e, current, depth, false);
+
         for (auto& e: current->params)
             if (e.name == name)
-                return &e;
+                return find_result(e, current, depth, true);
+
         current = current->parent;
+        depth++;
     }
-    return nullptr;
+    return find_null_result();
+}
+
+int scope_mem_size() {
+    return g_current->mem_size;
 }
