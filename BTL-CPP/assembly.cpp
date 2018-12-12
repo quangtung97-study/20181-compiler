@@ -12,6 +12,10 @@ void as_set_main(int addr) {
     g_main_addr = addr;
 }
 
+void as_set_jmp_addr(int i, int addr) {
+    g_instructions[i].p = addr;
+}
+
 int as_code_addr() {
     return g_instructions.size();
 }
@@ -68,6 +72,22 @@ void as_dec(int value) {
     i.op = OP_DEC;
     i.p = value;
     g_instructions.push_back(i);
+}
+
+int as_jmp() {
+    int index = g_instructions.size();
+    Instruction i;
+    i.op = OP_JMP;
+    g_instructions.push_back(i);
+    return index;
+}
+
+int as_false_jmp() {
+    int index = g_instructions.size();
+    Instruction i;
+    i.op = OP_FJMP;
+    g_instructions.push_back(i);
+    return index;
 }
 
 void as_store() {

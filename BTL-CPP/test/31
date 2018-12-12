@@ -1,13 +1,35 @@
 program tung;
-var a, array[10], b;
-procedure tung(var n);
+var a, i, r;
+
+(* tinh giai thua *)
+procedure fac(n; var res);
 begin
-    n := b + 6;
+    // call writeln(n);
+    if n = 0 then
+    begin
+        res := 1;
+    end
+    else
+    begin
+        call fac(n - 1, res);
+        res := res * n;
+    end;
+end;
+
+(* tinh tong *)
+procedure sum(n; var res);
+begin
+    res := 0;
+    for i := 1 to n do
+    begin
+        res := res + i;
+    end;
 end;
 
 begin
-    a := 3 + 4;
-    b := 11;
-    call tung(a);
-    a := a + 1;
+    call readln(a);
+    call fac(a, r);
+    call writeln(r);
+    call sum(a, r);
+    call writeln(r);
 end.

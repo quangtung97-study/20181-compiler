@@ -51,45 +51,46 @@ static void run(const std::vector<Instruction>& instructions) {
             case OP_LA:
                 sp++;
                 stack[sp] = base(i.p) + i.q;
-                std::cout << "LA: " << i.p << " " 
-                    << i.q << " addr: " 
-                    << stack[sp] << std::endl;
+                // std::cout << "DEBUG: LA: " << i.p << " " << i.q << " addr: " << stack[sp] << std::endl;
                 break;
 
             case OP_LV:
                 sp++;
                 stack[sp] = stack[base(i.p) + i.q];
-                std::cout << "LV: " << i.p << " " 
-                    << i.q << " addr: " 
-                    << stack[sp] << std::endl;
+                // std::cout << "DEBUG: LV: " << i.p << " " << i.q << " addr: " << stack[sp] << std::endl;
                 break;
 
             case OP_LC:
                 sp++; stack[sp] = i.p;
-                std::cout << "LC: " << i.p << std::endl;
+                // std::cout << "DEBUG: LC: " << i.p << std::endl;
                 break;
 
             case OP_LI:
                 stack[sp] = stack[stack[sp]];
-                std::cout << "LI: " << stack[sp] << std::endl;
+                // std::cout << "DEBUG: LI: " << stack[sp] << std::endl;
                 break;
 
             case OP_INC:
                 sp += i.p;
-                std::cout << "INC: " << i.p << std::endl;
+                // std::cout << "DEBUG: INC: " << i.p << std::endl;
                 break;
 
             case OP_DEC:
                 sp -= i.p;
-                std::cout << "DEC: " << i.p << std::endl;
+                // std::cout << "DEBUG: DEC: " << i.p << std::endl;
                 break;
 
             case OP_JMP:
-                // TODO
+                pc = i.p;
+                // std::cout << "DEBUG: JMP: " << i.p << std::endl;
                 break;
 
             case OP_FJMP:
-                // TODO
+                if (stack[sp] == 0) {
+                    pc = i.p;
+                    // std::cout << "DEBUG: FJMP: " << i.p << std::endl;
+                }
+                sp--;
                 break;
 
             case OP_HALT:
@@ -98,8 +99,7 @@ static void run(const std::vector<Instruction>& instructions) {
             case OP_STORE:
                 sp -= 2;
                 stack[stack[sp + 1]] = stack[sp + 2];
-                std::cout << "STORE: " << stack[sp + 1] 
-                    << " " << stack[sp + 2] << std::endl;
+                // std::cout << "DEBUG: STORE: " << stack[sp + 1] << " " << stack[sp + 2] << std::endl;
                 break;
 
             case OP_CALL:
@@ -109,14 +109,14 @@ static void run(const std::vector<Instruction>& instructions) {
                 pc = i.q;
                 sp += CALL_SIZE;
                 bp = sp + 1;
-                std::cout << "CALL: " << i.q << std::endl;
+                // std::cout << "DEBUG: CALL: " << i.q << std::endl;
                 break;
 
             case OP_RET:
                 sp -= CALL_SIZE;
                 pc = RA();
                 bp = BP();
-                std::cout << "RET: " << std::endl;
+                // std::cout << "DEBUG: RET: " << std::endl;
                 break;
 
             case OP_RI:
@@ -125,8 +125,8 @@ static void run(const std::vector<Instruction>& instructions) {
                 break;
 
             case OP_WI:
-                addr = stack[sp]; sp--;
-                std::cout << stack[addr] << std::endl;
+                std::cout << stack[sp] << std::endl;
+                sp--;
                 break;
 
             case OP_WL:
@@ -136,73 +136,76 @@ static void run(const std::vector<Instruction>& instructions) {
             case OP_ADD:
                 sp--;
                 stack[sp] = stack[sp] + stack[sp + 1];
-                std::cout << "ADD: " << stack[sp] << std::endl;
+                // std::cout << "DEBUG: ADD: " << stack[sp] << std::endl;
                 break;
 
             case OP_SUB:
                 sp--;
                 stack[sp] = stack[sp] - stack[sp + 1];
-                std::cout << "SUB: " << stack[sp] << std::endl;
+                // std::cout << "DEBUG: SUB: " << stack[sp] << std::endl;
                 break;
 
             case OP_MUL:
                 sp--;
                 stack[sp] = stack[sp] * stack[sp + 1];
-                std::cout << "MUL: " << stack[sp] << std::endl;
+                // std::cout << "DEBUG: MUL: " << stack[sp] << std::endl;
                 break;
 
             case OP_DIV:
                 sp--;
                 stack[sp] = stack[sp] / stack[sp + 1];
-                std::cout << "DIV: " << stack[sp] << std::endl;
+                // std::cout << "DEBUG: DIV: " << stack[sp] << std::endl;
                 break;
 
             case OP_MOD:
                 sp--;
                 stack[sp] = stack[sp] % stack[sp + 1];
-                std::cout << "MOD: " << stack[sp] << std::endl;
+                // std::cout << "DEBUG: MOD: " << stack[sp] << std::endl;
                 break;
 
             case OP_NEG:
                 stack[sp] = -stack[sp];
                 break;
 
-            case OP_CV:
-                // TODO
-                break;
-
             case OP_ODD:
                 stack[sp] = (stack[sp] % 2 == 1);
+                // std::cout << "DEBUG: COND ODD: " << stack[sp] << std::endl;
                 break;
 
             case OP_EQ:
                 sp--;
                 stack[sp] = stack[sp] == stack[sp + 1];
+                // std::cout << "DEBUG: COND EQ: " << stack[sp] << std::endl;
                 break;
 
             case OP_NE:
                 sp--;
                 stack[sp] = stack[sp] != stack[sp + 1];
+                // std::cout << "DEBUG: COND NE: " << stack[sp] << std::endl;
                 break;
 
             case OP_GT:
                 sp--;
                 stack[sp] = stack[sp] > stack[sp + 1];
+                // std::cout << "DEBUG: COND GT: " << stack[sp] << std::endl;
                 break;
 
             case OP_GE:
                 sp--;
                 stack[sp] = stack[sp] >= stack[sp + 1];
+                // std::cout << "DEBUG: COND GE: " << stack[sp] << std::endl;
                 break;
 
             case OP_LT:
                 sp--;
                 stack[sp] = stack[sp] < stack[sp + 1];
+                // std::cout << "DEBUG: COND LT: " << stack[sp] << std::endl;
                 break;
 
             case OP_LE:
                 sp--;
                 stack[sp] = stack[sp] <= stack[sp + 1];
+                // std::cout << "DEBUG: COND LE: " << stack[sp] << std::endl;
                 break;
         }
     }

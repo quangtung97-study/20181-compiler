@@ -392,18 +392,31 @@ next_arg:
 
 static void IF_STMT() {
     CONDITION();
+    int jmp_index = as_false_jmp();
+
     NEXT(TOKEN_THEN, "Thieu THEN");
     STATEMENT();
     if (sc_get() == TOKEN_ELSE) {
         sc_next();
+        int end_else_index = as_jmp();
+        as_set_jmp_addr(jmp_index, as_code_addr());
         STATEMENT();
+        as_set_jmp_addr(end_else_index, as_code_addr());
+    }
+    else {
+        as_set_jmp_addr(jmp_index, as_code_addr());
     }
 }
 
 static void WHILE_STMT() {
+    int begin_addr = as_code_addr();
     CONDITION();
+    int jmp_index = as_false_jmp();
     NEXT(TOKEN_DO, "Thieu DO");
     STATEMENT();
+    int jmp_index_loop = as_jmp();
+    as_set_jmp_addr(jmp_index_loop, begin_addr);
+    as_set_jmp_addr(jmp_index, as_code_addr());
 }
 
 static void FOR_STMT() {
@@ -413,12 +426,41 @@ static void FOR_STMT() {
         error("Khong can mot bien mang");
     sc_next();
 
+    load_variable(find);
+
     NEXT(TOKEN_ASSIGN, "Thieu phep gan := ");
-    EXPR();
+
+    auto category = EXPR();
+    if (category == LVALUE)
+        as_load_indirect();
+
+    as_store();
+
+    int begin_addr = as_code_addr();
     NEXT(TOKEN_TO, "Thieu TO");
-    EXPR();
+
+    load_variable(find);
+    as_load_indirect();
+    category = EXPR();
+    if (category == LVALUE)
+        as_load_indirect();
+    as_le();
+
+    int jmp_index = as_false_jmp();
+
     NEXT(TOKEN_DO, "Thieu DO");
     STATEMENT();
+    
+    load_variable(find);
+    load_variable(find);
+    as_load_indirect();
+    as_load_const(1);
+    as_add();
+    as_store();
+
+    int jmp_index_loop = as_jmp();
+    as_set_jmp_addr(jmp_index_loop, begin_addr);
+    as_set_jmp_addr(jmp_index, as_code_addr());
 }
 
 static void STATEMENT() {
@@ -618,6 +660,29 @@ static void PROGRAM() {
     NEXT(TOKEN_PROGRAM, "Thieu tu khoa PROGRAM");
     NEXT(TOKEN_IDENT, "Thieu ten chuong trinh");
     NEXT(TOKEN_SEMICOLON, "Thieu dau cham phay");
+
+    // readln
+    scope_new("readln");
+    auto find = scope_find("readln");
+    find.ep->proc_addr = as_code_addr();
+    scope_add_param("n", true);
+    int offset = -CALL_SIZE - 1;
+    as_load_value(0, offset);
+    as_read_int();
+    as_ret();
+    scope_pop();
+
+    // writeln
+    scope_new("writeln");
+    find = scope_find("writeln");
+    find.ep->proc_addr = as_code_addr();
+    scope_add_param("n", false);
+    offset = -CALL_SIZE - 1;
+    as_load_value(0, offset);
+    as_write_int();
+    as_ret();
+    scope_pop();
+    
     BLOCK();
     NEXT(TOKEN_PERIOD, "Thieu dau cham");
     as_halt();

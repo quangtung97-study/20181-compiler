@@ -23,8 +23,6 @@ enum OpCode {
     OP_MUL, OP_DIV, OP_MOD,
     OP_NEG, 
 
-    OP_CV,
-
     OP_ODD,
     OP_EQ, OP_NE, OP_GT, OP_LT, OP_GE, OP_LE,
 };

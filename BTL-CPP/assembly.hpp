@@ -8,6 +8,8 @@ void as_init();
 
 void as_set_main(int addr);
 
+void as_set_jmp_addr(int i, int addr);
+
 void as_save(FILE *file);
 
 int as_code_addr();
@@ -23,6 +25,10 @@ void as_load_indirect();
 void as_inc(int value);
 
 void as_dec(int value);
+
+int as_jmp();
+
+int as_false_jmp();
 
 void as_store();
 

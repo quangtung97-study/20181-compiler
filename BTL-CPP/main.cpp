@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     as_save(output);
     std::fclose(output);
 
-    print_scope(scope_top());
+    // print_scope(scope_top());
     
     std::fclose(file);
     return 0;
