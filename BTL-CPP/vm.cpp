@@ -95,6 +95,7 @@ static void run(const std::vector<Instruction>& instructions) {
                 break;
 
             case OP_HALT:
+                // std::cout << "DEBUG: " << sp << std::endl;
                 return;
 
             case OP_STORE:

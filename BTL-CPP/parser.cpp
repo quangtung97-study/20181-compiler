@@ -388,6 +388,7 @@ next_arg:
     }
 
     as_call(find.depth, find.ep->proc_addr);
+    as_dec(arg_count);
 }
 
 static void IF_STMT() {
