@@ -41,4 +41,6 @@ void sc_print(enum Token t);
 
 void error(const std::string& msg);
 
+void accepted();
+
 #endif

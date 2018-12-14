@@ -3,6 +3,7 @@
 #include <cstring>
 #include <iostream>
 #include <iomanip>
+#include <cstdlib>
 
 #define IDENT_NAME_SIZE 10
 #define MAX_DIGIT_COUNT 9
@@ -30,6 +31,37 @@ static int digit_count(int num) {
     return count;
 }
 
+static std::string convert_tabs_to_spaces(const std::string& s) {
+    const int tab_size = 4;
+    std::string result;
+    for (auto c: s) {
+        if (c != '\t') {
+            result.push_back(c);
+        }
+        else {
+            int size = result.size();
+            int new_size = ((size + tab_size) / tab_size) * tab_size;
+            for (int i = size; i < new_size; i++)
+                result.push_back(' ');
+        }
+    }
+
+    return result;
+}
+
+static void convert_to_arrows(std::string& s, int begin, int end) {
+    int size = s.size();
+    for (int i = 0; i < size; i++) {
+        if (i < begin || i >= end) {
+            if (s[i] != '\t')
+                s[i] = ' ';
+        }
+        else {
+            s[i] = '^';
+        }
+    }
+}
+
 void error(const std::string& s) {
     int line_error = g_line;
 
@@ -40,26 +72,19 @@ void error(const std::string& s) {
         line_number++;
         std::cout << std::setw(digit_count(line_error))
             << line_number << "| "
-            << line << std::endl;
+            << convert_tabs_to_spaces(line) << std::endl;
         if (line_number == line_error)
             break;
     }
 
+    int col_begin = g_col_begin - 1;
+    int col_end = g_col_end - 1;
+    convert_to_arrows(line, col_begin, col_end);
+
     int begin_code = digit_count(line_error) + 2;
     std::string prompt;
     prompt.resize(begin_code, ' ');
-    prompt += line;
-    int end = begin_code + g_col_begin - 1;
-    for (int i = begin_code; i < end; i++)
-        if (prompt[i] != '\t') {
-            prompt[i] = ' ';
-        }
-    prompt.erase(prompt.begin() + end, prompt.end());
-
-    std::cout << prompt;
-
-    prompt.clear();
-    prompt.resize(g_col_end - g_col_begin, '^');
+    prompt += convert_tabs_to_spaces(line);
     std::cout << prompt << std::endl;
 
     std::cout << "===============================================" << std::endl;
@@ -67,6 +92,17 @@ void error(const std::string& s) {
     std::cout << "Tai dong " << sc_line()
         << ", cot " << sc_col_begin() << std::endl;
     std::exit(-1);
+}
+
+void accepted() {
+    rd_reset();
+    std::string line;
+    while (rd_line(line)) {
+        std::cout << convert_tabs_to_spaces(line) << std::endl;
+    }
+
+    std::cout << "===============================================" << std::endl;
+    std::cout << "Nhan dien thanh cong!!!" << std::endl;
 }
 
 void sc_init(FILE *file) {
@@ -121,7 +157,7 @@ static void number_end() {
     if (g_number[0] == '\0')
         g_number_value = 0;
     else 
-        g_number_value = atoi(g_number);
+        g_number_value = std::atoi(g_number);
     g_number_end = 0;
 }
 

@@ -1,0 +1,7 @@
+program tung;
+var x, y, a[10];
+begin
+	x := 100;
+		y := 5;
+	a[0] := 4;
+end.

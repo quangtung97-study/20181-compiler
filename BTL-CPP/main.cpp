@@ -1,3 +1,4 @@
+#include "scanner.hpp"
 #include "parser.hpp"
 #include "scope.hpp"
 #include "assembly.hpp"
@@ -56,7 +57,9 @@ int main(int argc, char **argv) {
     ps_init(file);
     ps_parse();
 
-    std::cout << "Nhan dien thanh cong!!!" << std::endl;
+    accepted();
+
+    // print_scope(scope_top());
 
     FILE *output;
     if (argc >= 3) {
@@ -68,8 +71,6 @@ int main(int argc, char **argv) {
     as_save(output);
     std::fclose(output);
 
-    // print_scope(scope_top());
-    
     std::fclose(file);
     return 0;
 }
