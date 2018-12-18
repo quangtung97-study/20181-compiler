@@ -47,6 +47,7 @@ WHITESPACE  [ \n\t\r]
 "while" return WHILE;
 
 {ALPHA}{ALPHADIGIT}* return IDENT;
+{DIGIT}{DIGIT}* return CONSTANT;
 
 "[" return '[';
 "]" return ']';

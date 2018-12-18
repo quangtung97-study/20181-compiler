@@ -1,1 +1,39 @@
-tung a;
+int x;
+int *func();
+
+struct name {
+    const float x, y;
+    int *a, b, mang[10];
+};
+
+union tung {
+    int x;
+};
+
+enum token {
+    ident,
+    number = 20,
+} x, y;
+
+void func(int **x, float u);
+
+int *main(int x) {
+    int *p = &x, mang[100][2] = {{1, 2, 3}, {4, 5},};
+    int **pp = &p;
+
+nhan:
+    if (x == 10) {
+        int k = 4 * 10 - 100 * 3 << 5;
+        goto nhan;
+    }
+    else
+        return 100;
+
+    for (x = 100; x < 10; x++) {
+        ++x; --y; y--;
+        break;
+        if (u < 20)
+            continue;
+    }
+    return 0;
+}

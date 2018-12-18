@@ -59,42 +59,28 @@ translation_unit
     ;
 
 external_declaration
-    : init_declaration
-    | function_declaration
-    | function_definition
+    : function_definition
+    | declaration
     ;
 
-function_declaration 
-    : declaration_specifier function_declarator 
-        '(' parameter_list_opt ')' ';' ;
+function_definition: declaration_specifiers IDENT '(' ')' compound_statement ;
 
-function_definition
-    : declaration_specifier function_declarator 
-        '(' parameter_list_opt ')' 
-        compound_statement ;
-
-parameter_list_opt
-    : %empty
-    | parameter_list
+declaration
+    : declaration_specifiers ';'
+    | declaration_specifiers init_declaration_list ';'
     ;
 
-parameter_list
-    : declaration_specifier 
-    | declaration_specifier declarator 
-    | parameter_list ',' declaration_specifier declarator
+declaration_specifiers: type_qualifier_opt type_specifier;
+
+init_declaration_list
+    : init_declarator
+    | init_declaration_list ',' init_declarator
     ;
 
-function_declarator
-    : IDENT
-    | pointer_seq IDENT
+init_declarator
+    : declarator
+    | declarator '=' initializer
     ;
-
-const_opt
-    : %empty
-    | CONST
-    ;
-
-declaration_specifier: const_opt type_specifier ;
 
 type_specifier
     : VOID
@@ -113,62 +99,20 @@ type_integer
     | LONG
     ;
 
-init_declaration
-    : declaration_specifier init_declarator_list ';'
-    | declaration_specifier ';'
+type_qualifier_opt
+    : type_qualifier
+    | %empty
     ;
 
-init_declarator_list 
-    : init_declarator
-    | init_declarator_list ',' init_declarator 
-    ;
-
-init_declarator 
-    : declarator 
-    | declarator '=' initializer
-    ;
-
-initializer
-    : assignment_expression
-    | '{' initializer_list '}'
-    | '{' initializer_list ',' '}'
-    ;
-
-initializer_list
-    : initializer
-    | initializer_list ',' initializer
-    ;
-
-declarator
-    : direct_declarator 
-    | pointer_seq direct_declarator
-    ;
-
-pointer: '*' const_opt
-
-pointer_seq
-    : pointer
-    | pointer_seq pointer
-    ;
-
-constant_opt
-    : %empty
-    | CONSTANT
-    ;
-
-direct_declarator
-    : IDENT
-    | direct_declarator '[' constant_opt ']'
-    ;
+type_qualifier: CONST ;
 
 ident_opt
-    : %empty
-    | IDENT
+    : IDENT
+    | %empty
     ;
 
 struct_or_union_specifier
-    : struct_or_union ident_opt '{' struct_declaration_seq '}'
-    | struct_or_union ident_opt '{' '}'
+    : struct_or_union ident_opt '{' struct_declaration_list '}'
     | struct_or_union IDENT
 
 struct_or_union
@@ -176,19 +120,20 @@ struct_or_union
     | UNION
     ;
 
-struct_declaration_seq
+struct_declaration_list
     : struct_declaration
-    | struct_declaration_seq struct_declaration
+    | struct_declaration_list struct_declaration
     ;
 
 struct_declaration
-    : declaration_specifier struct_declarator_list ';' 
-    ;
+    : declaration_specifiers struct_declarator_list
 
 struct_declarator_list
-    : declarator
-    | struct_declarator_list ',' declarator
+    : struct_declarator
+    | struct_declarator_list ',' struct_declarator
     ;
+
+struct_declarator: declarator ;
 
 enum_specifier
     : ENUM ident_opt '{' enumerator_list '}'
@@ -202,8 +147,54 @@ enumerator_list
     ;
 
 enumerator
-    : IDENT 
-    | IDENT '=' constant_expression
+    : enumerator_constant 
+    | enumerator_constant '=' constant_expression
+    ;
+
+enumerator_constant: IDENT ;
+
+declarator: pointer_opt direct_declarator ;
+
+direct_declarator
+    : IDENT
+    | '(' declarator ')'
+    | direct_declarator '[' ']'
+    | direct_declarator '(' parameter_list ')'
+    ;
+
+pointer
+    : '*' 
+    | '*' type_qualifier
+    | '*' pointer
+    | '*' type_qualifier pointer
+    ;
+
+pointer_opt
+    : %empty
+    | pointer
+    ;
+
+parameter_list
+    : parameter_declaration
+    | parameter_list ',' parameter_declaration
+    ;
+
+parameter_list_opt
+    : %empty
+    | parameter_list
+    ;
+
+parameter_declaration: declaration_specifiers declarator ;
+
+initializer
+    : assignment_expression
+    | '{' initializer_list '}'
+    | '{' initializer_list ',' '}'
+    ;
+
+initializer_list
+    : initializer
+    | initializer_list ',' initializer
     ;
 
 primary_expression
@@ -235,7 +226,7 @@ unary_expression
     | DECREASE unary_expression
     | unary_operator cast_expression
     | SIZEOF unary_expression
-    /* | SIZEOF '(' type_name ')' */
+    | SIZEOF '(' type_name ')'
     ;
 
 unary_operator
@@ -249,7 +240,7 @@ unary_operator
 
 cast_expression
     : unary_expression
-    /* | '(' type_name ')' cast_expression */
+    | '(' type_name ')' cast_expression
     ;
 
 multiplicative_expression
@@ -331,6 +322,24 @@ expression
 
 constant_expression: conditional_expression ;
 
+type_name: declaration_specifiers abstract_declarator ;
+
+abstract_declarator
+    : pointer
+    | pointer_opt direct_abstract_declarator
+    ;
+
+direct_abstract_declarator
+    : '(' abstract_declarator ')'
+    | direct_abstract_declarator_opt '[' ']'
+    | direct_abstract_declarator_opt '(' parameter_list_opt ')'
+    ;
+
+direct_abstract_declarator_opt
+    : %empty
+    | direct_abstract_declarator
+    ;
+
 statement
     : labeled_statement
     | compound_statement
@@ -359,7 +368,7 @@ block_item_list
     ;
 
 block_item
-    : init_declaration
+    : declaration
     | statement
     ;
 
@@ -383,7 +392,7 @@ iteration_statement
     : WHILE '(' expression ')' statement
     | DO statement WHILE '(' expression ')' ';'
     | FOR '(' expression_opt ';' expression_opt ';' expression_opt ')' statement
-    | FOR '(' init_declaration expression_opt ';' expression_opt ')' statement
+    | FOR '(' declaration expression_opt ';' expression_opt ')' statement
     ;
 
 jmp_statement
