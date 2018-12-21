@@ -1,0 +1,26 @@
+program tung;
+
+procedure print(n);
+begin
+    call writei(n + 100);
+    call writeln;
+end;
+
+procedure outer(n);
+var x, y;
+    procedure inner(m);
+    begin
+        call print(n);
+        call writei(m);
+        call writeln;
+        call readi(x);
+        call writei(x + 1000);
+        call writeln;
+    end;
+begin
+    call inner(7);
+end;
+
+begin
+    call outer(14);
+end.

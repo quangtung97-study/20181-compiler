@@ -1,0 +1,12 @@
+program tung;
+var a, b;
+begin
+    a := 18;
+    b := 24;
+    while a <> b do
+        if a > b then
+            a := a - b
+        else
+            b := b - a;
+    call writei(a);
+end.

@@ -422,7 +422,7 @@ next_arg:
     }
     else {
         as_dec(CALL_FRAME_SIZE + find.ep->proc_scope->param_mem_size);
-        as_call(find.depth, find.ep->proc_addr);
+        as_call(find.depth, find.ep->proc_scope->proc_addr);
     }
 }
 
@@ -535,8 +535,6 @@ static void PROCEDURE() {
     sc_next();
 
     scope_new(name);
-    auto find = scope_find(name);
-    find.ep->proc_addr = as_code_addr();
 
     if (sc_get() == TOKEN_LPARENT) {
         sc_next();
@@ -678,7 +676,7 @@ static void BLOCK() {
         PROCEDURE();
     }
 
-    as_set_main(as_code_addr());
+    scope_top()->proc_addr = as_code_addr();
     as_inc(CALL_FRAME_SIZE + 
             scope_mem_size() + scope_param_mem_size());
     
@@ -715,6 +713,7 @@ static void PROGRAM() {
     BLOCK();
     NEXT(TOKEN_PERIOD, "Thieu dau cham");
     as_halt();
+    as_set_main(scope_top()->proc_addr);
 }
 
 void ps_parse() {

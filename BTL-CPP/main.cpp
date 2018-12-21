@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     // print_scope(scope_top());
     
     std::cout << "===============================================" << std::endl;
-    std::cout << "Ma nguon dich duoc sinh ra: " << std::endl;
+    std::cout << "Ma nguon duoc sinh ra: " << std::endl;
     as_optimize();
     as_print();
     std::cout << "===============================================" << std::endl;

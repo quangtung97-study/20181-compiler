@@ -264,7 +264,6 @@ void as_optimize() {
 }
 
 void as_print() {
-    std::ostringstream ss;
     int padding = digit_count(g_instructions.size() - 1);
 
     auto print_line = [padding](int index) {

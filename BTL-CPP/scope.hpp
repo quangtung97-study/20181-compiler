@@ -38,12 +38,12 @@ struct NameEntry {
 
     // kind procedure
     std::unique_ptr<Scope> proc_scope = nullptr;
-    int proc_addr;
 };
 
 struct Scope {
     std::string name;
     struct Scope *parent = nullptr;
+    int proc_addr;
 
     std::vector<NameEntry> params;
     int param_mem_size = 0;
