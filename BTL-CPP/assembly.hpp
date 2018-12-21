@@ -72,6 +72,8 @@ void as_le();
 
 void as_ne();
 
+void as_optimize();
+
 void as_print();
 
 #endif

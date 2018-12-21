@@ -66,6 +66,7 @@ int main(int argc, char **argv) {
     
     std::cout << "===============================================" << std::endl;
     std::cout << "Ma nguon dich duoc sinh ra: " << std::endl;
+    as_optimize();
     as_print();
     std::cout << "===============================================" << std::endl;
     std::cout << "Running..." << std::endl;

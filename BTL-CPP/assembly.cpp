@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 
 std::vector<Instruction> g_instructions;
 
@@ -228,6 +229,40 @@ static int digit_count(int num) {
     return count;
 }
 
+void as_optimize() {
+    std::vector<Instruction> tmp = g_instructions;
+    g_instructions.clear();
+    std::vector<int> removed_indices;
+
+    for (size_t index = 0; index < tmp.size(); index++) {
+        Instruction i = tmp[index];
+        if (i.op == OP_LI && g_instructions.back().op == OP_LA) {
+            g_instructions.back().op = OP_LV;
+            removed_indices.push_back(index);
+        }
+        else {
+            g_instructions.push_back(i);
+        }
+    }
+
+    for (auto& i: g_instructions) {
+        if (i.op == OP_JMP || i.op == OP_FJMP) {
+            int addr = i.p;
+            auto it = std::lower_bound(removed_indices.begin(), 
+                    removed_indices.end(), addr);
+            auto diff = it - removed_indices.begin();
+            i.p -= diff;
+        }
+        else if (i.op == OP_CALL) {
+            int addr = i.q;
+            auto it = std::upper_bound(removed_indices.begin(), 
+                    removed_indices.end(), addr);
+            auto diff = it - removed_indices.begin();
+            i.q -= diff;
+        }
+    }
+}
+
 void as_print() {
     std::ostringstream ss;
     int padding = digit_count(g_instructions.size() - 1);
@@ -237,11 +272,11 @@ void as_print() {
     };
 
     auto print_op = [](const char *op) {
-        std::cout << std::setw(4) << std::left << op << std::right;
+        std::cout << std::setw(4) << std::left << op << std::right << " ";
     };
 
     auto print_arg = [](int arg) {
-        std::cout << std::setw(6) << arg;
+        std::cout << std::setw(4) << arg;
     };
 
     auto print_single = [print_arg](Instruction i) {
@@ -250,7 +285,8 @@ void as_print() {
 
     auto print_double = [print_arg](Instruction i) {
         print_arg(i.p);
-        print_arg(i.q);
+        std::cout << ", ";
+        std::cout << i.q;
     };
 
     int index = 0;
