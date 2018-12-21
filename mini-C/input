@@ -35,5 +35,22 @@ nhan:
         if (u < 20)
             continue;
     }
+
+    switch (x) {
+    case 1:
+        x = 5;
+        break;
+
+    case 5:
+        y = 3;
+    default:
+        x = 1;
+        break;
+    }
+
+    x = 1;
+    do {
+        x++;
+    } while (x == 3);
     return 0;
 }
