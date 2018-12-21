@@ -8,6 +8,7 @@ add_executable(main
     scanner.cpp
     reader.cpp
     assembly.cpp
+    vm.cpp
     )
 
 add_executable(main_scanner
@@ -24,8 +25,4 @@ add_executable(main_reader
 add_executable(main_assembly
     main_assembly.cpp
     assembly.cpp
-    )
-
-add_executable(vm
-    vm.cpp
     )

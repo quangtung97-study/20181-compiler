@@ -74,10 +74,11 @@ static FindResult CHECK_PROC() {
 static ValueCategory EXPR();
 
 static void load_variable(FindResult find) {
-    int offset = find.ep->offset;
-
+    int offset;
     if (find.is_param) 
-        offset -= CALL_SIZE + find.param_mem_size;
+        offset = CALL_FRAME_SIZE + find.ep->offset;
+    else 
+        offset = CALL_FRAME_SIZE + find.param_mem_size + find.ep->offset;
 
     if (find.ep->var_type == VAR_REF)
         as_load_value(find.depth, offset);
@@ -338,22 +339,44 @@ static void ASSIGN_STMT(FindResult find) {
     as_store();
 }
 
+static bool is_special_proc(const std::string& name) {
+    if (name == "readi")
+        return true;
+    if (name == "writei")
+        return true;
+    if (name == "writeln")
+        return true;
+    return false;
+}
+
 static void CALL_STMT() {
     CHECK(TOKEN_IDENT, "Thieu ten thu tuc duoc goi");
-    auto find = CHECK_PROC();
+    const auto find = CHECK_PROC();
     sc_next();
 
+    bool is_special = is_special_proc(find.ep->name);
     int arg_count = 0;
     int max_arg_count = find.ep->proc_scope->params.size();
+
+    if (!is_special) 
+        as_inc(CALL_FRAME_SIZE);
 
     if (sc_get() == TOKEN_LPARENT) {
         sc_next();
 next_arg:
         if (arg_count == max_arg_count) {
-            std::ostringstream ss;
-            ss << "\n\tThua so doi so goi ham" << std::endl;
-            ss << "\tChi can " << max_arg_count << " doi so";
-            error(ss.str());
+            if (arg_count == 0) {
+                std::ostringstream ss;
+                ss << "Khong can () cho goi thu tuc: " 
+                    << find.ep->name << std::endl;
+                error(ss.str());
+            }
+            else {
+                std::ostringstream ss;
+                ss << "\n\tThua so doi so goi ham" << std::endl;
+                ss << "\tChi can " << max_arg_count << " doi so";
+                error(ss.str());
+            }
         }
 
         auto category = EXPR();
@@ -381,14 +404,26 @@ next_arg:
 
     if (arg_count < max_arg_count) {
         std::ostringstream ss;
-        ss << "\n\tThieu so doi so goi ham" << std::endl;
+        ss << "\n\tThieu so doi so goi thu tuc: " 
+            << find.ep->name << std::endl;
         ss << "\tCan " << max_arg_count << " gia tri" << std::endl;
         ss << "\tNhung da cung cap " << arg_count << " gia tri";
         error(ss.str());
     }
 
-    as_call(find.depth, find.ep->proc_addr);
-    as_dec(arg_count);
+    if (is_special) {
+        auto& name = find.ep->name;
+        if (name == "readi")
+            as_read_int();
+        else if (name == "writei")
+            as_write_int();
+        else 
+            as_write_line();
+    }
+    else {
+        as_dec(CALL_FRAME_SIZE + find.ep->proc_scope->param_mem_size);
+        as_call(find.depth, find.ep->proc_addr);
+    }
 }
 
 static void IF_STMT() {
@@ -644,7 +679,8 @@ static void BLOCK() {
     }
 
     as_set_main(as_code_addr());
-    as_inc(scope_mem_size());
+    as_inc(CALL_FRAME_SIZE + 
+            scope_mem_size() + scope_param_mem_size());
     
     if (sc_get() == TOKEN_BEGIN) {
         sc_next();
@@ -653,8 +689,6 @@ static void BLOCK() {
     else {
         error("Thieu BEGIN");
     }
-
-    as_dec(scope_mem_size());
 }
 
 static void PROGRAM() {
@@ -662,26 +696,20 @@ static void PROGRAM() {
     NEXT(TOKEN_IDENT, "Thieu ten chuong trinh");
     NEXT(TOKEN_SEMICOLON, "Thieu dau cham phay");
 
-    // readln
-    scope_new("readln");
-    auto find = scope_find("readln");
-    find.ep->proc_addr = as_code_addr();
+    // readi
+    scope_new("readi");
+    auto find = scope_find("readi");
     scope_add_param("n", true);
-    int offset = -CALL_SIZE - 1;
-    as_load_value(0, offset);
-    as_read_int();
-    as_ret();
+    scope_pop();
+
+    // writei
+    scope_new("writei");
+    find = scope_find("writei");
+    scope_add_param("n", false);
     scope_pop();
 
     // writeln
     scope_new("writeln");
-    find = scope_find("writeln");
-    find.ep->proc_addr = as_code_addr();
-    scope_add_param("n", false);
-    offset = -CALL_SIZE - 1;
-    as_load_value(0, offset);
-    as_write_int();
-    as_ret();
     scope_pop();
     
     BLOCK();

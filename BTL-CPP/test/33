@@ -1,0 +1,19 @@
+program tung;
+var a, i, r;
+
+procedure print(n);
+begin
+    call writei(n + 100);
+    call writeln;
+    if odd n then
+        call writei(5)
+    else
+        call writei(10);
+    call writeln;
+end;
+
+begin
+    call readi(a);
+    call writei(a);
+    call print(a);
+end.

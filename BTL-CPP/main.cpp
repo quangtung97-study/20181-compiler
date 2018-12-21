@@ -3,6 +3,7 @@
 #include "scope.hpp"
 #include "assembly.hpp"
 #include <iostream>
+#include "vm.hpp"
 
 void print_scope(Scope *scope) {
     if (scope->parent != nullptr) {
@@ -15,6 +16,7 @@ void print_scope(Scope *scope) {
             std::cout << "  ref";
         std::cout << std::endl;
     }
+    std::cout << "Parameters Mem: " << scope->param_mem_size << std::endl;
 
     if (scope->parent != nullptr) {
         std::cout << "Declarations: " << std::endl;
@@ -39,6 +41,7 @@ void print_scope(Scope *scope) {
             std::cout << "=======================================" << std::endl;
         }
     }
+    std::cout << "Locals Mem: " << scope->mem_size << std::endl;
 }
 
 int main(int argc, char **argv) {
@@ -60,17 +63,13 @@ int main(int argc, char **argv) {
     accepted();
 
     // print_scope(scope_top());
+    
+    std::cout << "===============================================" << std::endl;
+    std::cout << "Ma nguon dich duoc sinh ra: " << std::endl;
+    as_print();
+    std::cout << "===============================================" << std::endl;
+    std::cout << "Running..." << std::endl;
+    vm_run(as_instructions());
 
-    FILE *output;
-    if (argc >= 3) {
-        output = std::fopen(argv[2], "wb");
-    }
-    else {
-        output = std::fopen("a.out", "wb");
-    }
-    as_save(output);
-    std::fclose(output);
-
-    std::fclose(file);
     return 0;
 }

@@ -6,6 +6,8 @@
 
 void as_init();
 
+const Instruction *as_instructions();
+
 void as_set_main(int addr);
 
 void as_set_jmp_addr(int i, int addr);
@@ -42,6 +44,8 @@ void as_read_int();
 
 void as_write_int();
 
+void as_write_line();
+
 void as_add();
 
 void as_sub();
@@ -67,5 +71,7 @@ void as_lt();
 void as_le();
 
 void as_ne();
+
+void as_print();
 
 #endif

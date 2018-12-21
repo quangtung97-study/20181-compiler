@@ -79,4 +79,6 @@ FindResult scope_find(const std::string& name);
 
 int scope_mem_size();
 
+int scope_param_mem_size();
+
 #endif

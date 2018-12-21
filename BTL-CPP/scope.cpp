@@ -106,10 +106,7 @@ void scope_add_param(const std::string& name, bool is_reference)
     entry.array_size = 0;
 
     entry.offset = g_current->param_mem_size;
-    if (is_reference)
-        g_current->param_mem_size += 1;
-    else
-        g_current->param_mem_size += 1;
+    g_current->param_mem_size += 1;
 
     scope_add_param(std::move(entry));
 }
@@ -162,4 +159,8 @@ FindResult scope_find(const std::string& name) {
 
 int scope_mem_size() {
     return g_current->mem_size;
+}
+
+int scope_param_mem_size() {
+    return g_current->param_mem_size;
 }

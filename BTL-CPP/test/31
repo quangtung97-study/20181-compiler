@@ -27,9 +27,10 @@ begin
 end;
 
 begin
-    call readln(a);
+    call readi(a);
     call fac(a, r);
-    call writeln(r);
+    call writei(r);
     call sum(a, r);
-    call writeln(r);
+    call writei(r);
+    call writeln;
 end.
