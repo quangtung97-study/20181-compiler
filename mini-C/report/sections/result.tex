@@ -1,10 +1,95 @@
 \documentclass[../report.tex]{subfiles}
 
 \begin{document}
-Biên dịch chương trình sử dụng Bison vẫn xảy ra shift/reduce 
+Biên dịch chương trình sử dụng Bison xảy ra shift/reduce 
 conflict tại câu lệnh \textbf{if else}. \\
 Toàn bộ mã nguồn tại link \cite{source-code}. \\[3mm]
 Với đầu vào: 
 \begin{lstlisting}
+int x;
+int *func();
+
+struct name {
+    const float x, y;
+    int *a, b, mang[10];
+};
+
+union tung {
+    int x, y[100 * 2];
+};
+
+enum token {
+    ident,
+    number = 20,
+} x, y;
+
+void func(int **x, float u);
+
+void func(int a);
+
+int *main(int x) {
+    int *p = &x, mang[100][2] = {{1, 2, 3}, {4, 5},};
+    int **pp = &p;
+
+nhan:
+    if (x == 10) {
+        int k = 4 * 10 - 100 * 3 << 5;
+        goto nhan;
+    }
+    else
+        return 100;
+
+    for (x = 100; x < 10; x++) {
+        ++x; --y; y--;
+        break;
+        if (u < 20)
+            continue;
+        x = 199;
+        x = 0732;
+        x = 3.32e-33;
+        x = '"';
+        s = "ta quang tung\"\n";
+        x += 5;
+        x <<= 10;
+    }
+
+    switch (x) {
+    case 1:
+        x = 5;
+        break;
+
+    case 5:
+        y = 3;
+    default:
+        x = 1;
+        break;
+    }
+
+    x = 1;
+    do {
+        x++;
+    } while (x == 3);
+    return 0;
+}
 \end{lstlisting}
+Chương trình nhận diện thành công. \\[3mm]
+Tuy nhiên, ngay cả với đầu vào:
+\begin{lstlisting}
+int;
+
+struct Point {
+    unsigned int a, b;
+};
+
+int main() {
+    return 0;
+}
+\end{lstlisting}
+Chương trình cũng nhận diện thành công, dù cho \textbf{int;}
+không có tên biến, lý do vì văn phạm cho phép điều này nhằm 
+cho phép khai báo struct như trên. Tuy nhiên có 
+thể chuyển việc nhận diện 
+lỗi này cho bộ phân tích ngữ nghĩa. 
+
+
 \end{document}

@@ -1,4 +1,4 @@
-int x;
+unsigned int a;
 int *func();
 
 struct name {

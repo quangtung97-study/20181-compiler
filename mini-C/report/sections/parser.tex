@@ -80,7 +80,7 @@ hỗ trợ khai báo hay định nghĩa hàm mà
 tham số có kiểu nhưng không có tên.
 số. Ví dụ: \textbf{void func(int **); }. \\
 
-\subsection{declaration\_specifier}
+\subsubsection{declaration\_specifier}
 Phần chỉ định khai báo, có cấu trúc như sau: 
 \begin{lstlisting}
 const_opt
@@ -174,8 +174,13 @@ direct_declarator
     : IDENT
     | direct_declarator '[' assignment_expression_opt ']'
     ;
-\end{lstlisting}
 
+function_declarator
+    : IDENT
+    | pointer_seq IDENT
+    ;
+\end{lstlisting}
+\textbf{declarator} của hàm không có dãy các mảng. 
 
 \subsubsection{initializer}
 \begin{lstlisting}
@@ -246,7 +251,7 @@ enumerator
 Trong đó có hỗ trợ dấu phẩy sau danh sách các \textbf{enumerator} 
 (hay trailing comma). \\
 
-\subsection{expression}
+\subsubsection{expression}
 Các biểu thức: 
 \begin{lstlisting}
 primary_expression
@@ -278,7 +283,6 @@ unary_expression
     | DECREASE unary_expression
     | unary_operator cast_expression
     | SIZEOF unary_expression
-    /* | SIZEOF '(' type_name ')' */
     ;
 
 unary_operator
