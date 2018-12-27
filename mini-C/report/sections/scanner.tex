@@ -1,0 +1,269 @@
+\documentclass[../report.tex]{subfiles}
+
+\begin{document}
+
+\subsection{Bộ kí tự đầu vào} 
+Bao gồm các kí tự sau: 
+\begin{itemize}
+\item Chữ cái: A..Z, a..z
+\item Chữ số: 0..9
+\item Kí tự đặc biệt: ' " , : ? ; > < = . \textbackslash \textasciicircum 
+            + - * / \% \_ \& | \textasciitilde ! ( ) [ ] \{ \}
+\end{itemize}
+
+\subsection{Các từ vựng của Mini-C}
+Bao gồm:
+\begin{itemize}
+    \item Hằng số: Số nguyên, số thực hoặc kí tự (Mã ASCII).
+    \item Xâu
+    \item Định danh 
+    \item Từ khóa: 
+        break, case, char, const, continue, 
+        default, do, double, else, enum, 
+        float, for, goto, if, int, long, 
+        return, short, sizeof, struct, switch, 
+        union, void, unsigned, while
+    \item Dấu phép toán:
+    \begin{itemize}
+        \item Hậu tố / tiền tố: . -> ++ --
+        \item Số học: + - * / \% 
+        \item Bit: \textasciitilde \& \textasciicircum | 
+        \item Logic: ! \&\& || 
+        \item Dịch bit: << >> 
+        \item Đặc biệt: ? , 
+    \end{itemize}
+    \item Dấu ngoặc: ( ) [ ] \{ \}
+    \item Kết thúc lệnh / nhãn: : ;
+    \item Phép gán: 
+        = += -= *= /= \%= \textasciicircum= |= <<= >>=
+\end{itemize}
+\subsection{Phân tích từ vựng bằng Flex \& Bison}
+\subsubsection{Các từ tố được khái báo trong file Bison}
+\begin{lstlisting}
+%token KEYWORD
+%token IDENT
+%token CONSTANT
+%token STRING_LITERAL
+
+%token BREAK
+%token CASE
+%token CHAR
+%token CONST
+%token CONTINUE
+%token DEFAULT
+%token DO
+%token DOUBLE
+%token ELSE
+%token ENUM
+%token FLOAT
+%token FOR
+%token GOTO
+%token IF
+%token INT
+%token LONG
+%token RETURN
+%token SHORT
+%token SIZEOF
+%token STRUCT
+%token SWITCH
+%token UNION
+%token UNSIGNED
+%token VOID
+%token WHILE
+
+%token ARROW
+%token INCREASE
+%token DECREASE
+%token SHIFT_LEFT
+%token SHIFT_RIGHT
+
+%token GT
+%token LT
+%token GE
+%token LE
+%token EQ
+%token NE
+
+%token AND
+%token OR
+
+%token ADD_ASSIGN
+%token SUB_ASSIGN
+%token MUL_ASSIGN
+%token DIV_ASSIGN
+%token REM_ASSIGN
+%token SL_ASSIGN
+%token SR_ASSIGN
+%token AND_ASSIGN
+%token OR_ASSIGN
+%token XOR_ASSIGN
+\end{lstlisting}
+
+\subsubsection{Comment}
+Khai báo các điều kiện bắt đầu: 
+\begin{lstlisting}
+%x COMMENT_SINGLE
+%x COMMENT_MULTIPLE
+\end{lstlisting}
+Xử lý comment của Mini-C:
+\begin{lstlisting}
+<INITIAL>"//"           BEGIN(COMMENT_SINGLE);
+<INITIAL>"/*"           BEGIN(COMMENT_MULTIPLE);
+<COMMENT_SINGLE,COMMENT_MULTIPLE>.  ;
+<COMMENT_SINGLE>"\n"    BEGIN(INITIAL);
+<COMMENT_MULTIPLE>"\n"  ;
+<COMMENT_MULTIPLE>"*/"  BEGIN(INITIAL);
+\end{lstlisting}
+
+
+\subsubsection{Hằng số}
+Các định nghĩa được sử dụng: 
+\begin{lstlisting}
+DIGIT       [0-9]
+HEXDIGIT    [0-9a-fA-F]
+OCTDIGIT    [0-7]
+EXP_PART    [eE][+-]?{DIGIT}+
+EXP_PART_OPT    ({EXP_PART})?
+C_CHAR      ([^'\\\n]|{ESCAPE_CHAR})
+ESCAPE_CHAR \\['"?\\abfnrtv]
+\end{lstlisting}
+Xử lý hằng số: 
+\begin{lstlisting}
+[1-9]{DIGIT}* return CONSTANT;
+0{OCTDIGIT}* return CONSTANT;
+0x{HEXDIGIT}+ return CONSTANT;
+0X{HEXDIGIT}+ return CONSTANT;
+
+{DIGIT}*"."{DIGIT}+{EXP_PART_OPT} return CONSTANT;
+{DIGIT}+"."{EXP_PART_OPT} return CONSTANT;
+{DIGIT}+{EXP_PART} return CONSTANT;
+
+"'"{C_CHAR}"'" return CONSTANT;
+\end{lstlisting}
+\subsubsection{Xâu}
+Các định nghĩa được sử dụng: 
+\begin{lstlisting}
+S_CHAR      ([^"\\\n]|{ESCAPE_CHAR})
+\end{lstlisting}
+Xử lý xâu:
+\begin{lstlisting}
+\"{S_CHAR}+\" return STRING_LITERAL;
+\end{lstlisting}
+
+\subsubsection{Các từ khóa}
+\begin{lstlisting}
+"break" return BREAK;
+"case" return CASE;
+"char" return CHAR;
+"const" return CONST;
+"continue" return CONTINUE;
+"default" return DEFAULT;
+"do" return DO;
+"double" return DOUBLE;
+"else" return ELSE;
+"enum" return ENUM;
+"float" return FLOAT;
+"for" return FOR;
+"goto" return GOTO;
+"if" return IF;
+"int" return INT;
+"long" return LONG;
+"return" return RETURN;
+"short" return SHORT;
+"sizeof" return SIZEOF;
+"struct" return STRUCT;
+"switch" return SWITCH;
+"union" return UNION;
+"void" return VOID;
+"unsigned" return UNSIGNED;
+"while" return WHILE;
+\end{lstlisting}
+
+\subsubsection{Định danh}
+Các định nghĩa được sử dụng: 
+\begin{lstlisting}
+ALPHA       [_A-Za-z]
+ALPHADIGIT  [_A-Za-z0-9]
+\end{lstlisting}
+Xử lý định danh: 
+\begin{lstlisting}
+{ALPHA}{ALPHADIGIT}* return IDENT;
+\end{lstlisting}
+
+\subsubsection{Dấu phép toán}
+\begin{lstlisting}
+"." return '.';
+"->" return ARROW;
+"++" return INCREASE;
+"--" return DECREASE;
+
+"+" return '+';
+"-" return '-';
+"*" return '*';
+"/" return '/';
+"%" return '%';
+"~" return '~';
+"!" return '!';
+
+"<<" return SHIFT_LEFT;
+">>" return SHIFT_RIGHT;
+
+">" return GT;
+"<" return LT;
+">=" return GE;
+"<=" return LE;
+"==" return EQ;
+"!=" return NE;
+
+"^" return '^';
+"|" return '|';
+"&" return '&';
+
+"&&" return AND;
+"||" return OR;
+
+"?" return '?';
+"," return ',';
+\end{lstlisting}
+
+\subsubsection{Dấu ngoặc}
+\begin{lstlisting}
+"[" return '[';
+"]" return ']';
+"{" return '{';
+"}" return '}';
+"(" return '(';
+")" return ')';
+\end{lstlisting}
+
+\subsubsection{Dấu kết thúc lệnh / nhãn}
+\begin{lstlisting}
+":" return ':';
+";" return ';';
+\end{lstlisting}
+
+\subsubsection{Dấu phép gán}
+\begin{lstlisting}
+"=" return '=';
+"+=" return ADD_ASSIGN;
+"-=" return SUB_ASSIGN;
+"*=" return MUL_ASSIGN;
+"/=" return DIV_ASSIGN;
+"%=" return REM_ASSIGN;
+"&=" return AND_ASSIGN;
+"|=" return OR_ASSIGN;
+"^=" return XOR_ASSIGN;
+"<<=" return SL_ASSIGN;
+">>=" return SR_ASSIGN;
+\end{lstlisting}
+
+\subsubsection{Xử lý lỗi}
+\begin{lstlisting}
+{WHITESPACE}            ;
+. { 
+    printf("Khong nhan dien duoc ki tu: %s\n", yytext);
+    exit(-1); 
+}
+\end{lstlisting}
+
+\end{document}

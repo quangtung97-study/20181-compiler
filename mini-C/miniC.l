@@ -4,10 +4,16 @@
 %}
 
 DIGIT       [0-9]
+HEXDIGIT    [0-9a-fA-F]
+OCTDIGIT    [0-7]
 ALPHA       [_A-Za-z]
 ALPHADIGIT  [_A-Za-z0-9]
 WHITESPACE  [ \n\t\r]
-
+EXP_PART    [eE][+-]?{DIGIT}+
+EXP_PART_OPT    ({EXP_PART})?
+C_CHAR      ([^'\\\n]|{ESCAPE_CHAR})
+ESCAPE_CHAR \\['"?\\abfnrtv]
+S_CHAR      ([^"\\\n]|{ESCAPE_CHAR})
 %x COMMENT_SINGLE
 %x COMMENT_MULTIPLE
 
@@ -47,7 +53,19 @@ WHITESPACE  [ \n\t\r]
 "while" return WHILE;
 
 {ALPHA}{ALPHADIGIT}* return IDENT;
-{DIGIT}{DIGIT}* return CONSTANT;
+
+[1-9]{DIGIT}* return CONSTANT;
+0{OCTDIGIT}* return CONSTANT;
+0x{HEXDIGIT}+ return CONSTANT;
+0X{HEXDIGIT}+ return CONSTANT;
+
+{DIGIT}*"."{DIGIT}+{EXP_PART_OPT} return CONSTANT;
+{DIGIT}+"."{EXP_PART_OPT} return CONSTANT;
+{DIGIT}+{EXP_PART} return CONSTANT;
+
+"'"{C_CHAR}"'" return CONSTANT;
+
+\"{S_CHAR}+\" return STRING_LITERAL;
 
 "[" return '[';
 "]" return ']';
@@ -60,13 +78,13 @@ WHITESPACE  [ \n\t\r]
 "++" return INCREASE;
 "--" return DECREASE;
 
-"*" return '*';
 "+" return '+';
 "-" return '-';
-"~" return '~';
-"!" return '!';
+"*" return '*';
 "/" return '/';
 "%" return '%';
+"~" return '~';
+"!" return '!';
 
 "<<" return SHIFT_LEFT;
 ">>" return SHIFT_RIGHT;
@@ -86,11 +104,22 @@ WHITESPACE  [ \n\t\r]
 "||" return OR;
 
 "?" return '?';
-":" return ':';
-";" return ';';
 "," return ',';
 
+":" return ':';
+";" return ';';
+
 "=" return '=';
+"+=" return ADD_ASSIGN;
+"-=" return SUB_ASSIGN;
+"*=" return MUL_ASSIGN;
+"/=" return DIV_ASSIGN;
+"%=" return REM_ASSIGN;
+"&=" return AND_ASSIGN;
+"|=" return OR_ASSIGN;
+"^=" return XOR_ASSIGN;
+"<<=" return SL_ASSIGN;
+">>=" return SR_ASSIGN;
 
 {WHITESPACE}            ;
 . { 

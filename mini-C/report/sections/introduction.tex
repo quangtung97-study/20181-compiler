@@ -1,0 +1,24 @@
+\documentclass[../report.tex]{subfiles}
+
+\begin{document}
+Cú pháp của ngôn ngữ Mini-C được trình bày 
+trong báo cáo này gần giống cú pháp của ngôn ngữ C99, ngoại trừ: 
+\begin{itemize}
+    \item Không có tiền xử lý (\#include, \#define, \ldots).
+    \item Không có typedef. 
+    \item Không có con trỏ hàm. 
+    \item Kiểu dữ liệu số nguyên, số thực đơn giản hơn. 
+        \begin{itemize}
+        \item Kiểu số nguyên gồm: char, short, int, long, 
+            unsigned char, unsigned short, 
+            unsigned int, unsigned long.
+        \item Kiểu số thực gồm:  float, double.
+        \end{itemize}
+    \item Hằng số nguyên, số thực, kí tự đơn giản hơn. 
+    \item Không có định nghĩa cho 
+        hàm không giới hạn số tham số (VD: printf). 
+    \item Không có biểu thức chuyển đổi kiểu. Ví dụ: 
+        \textbf{(double)(6 + 5)}.
+\end{itemize}
+Được dựa trên chuẩn ISO về ngôn ngữ C. \cite{iso}
+\end{document}

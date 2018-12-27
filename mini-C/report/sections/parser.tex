@@ -1,80 +1,54 @@
-%{
-    extern int yylex();
-    extern void yyerror(const char *s);   
-%}
+\documentclass[../report.tex]{subfiles}
 
-%token KEYWORD
-%token IDENT
-%token CONSTANT
-%token STRING_LITERAL
+\begin{document}
+\subsection{Quy ước đặt tên}
+Các kí tự không kết thúc có thể có những hậu tố có dạng:
+\begin{itemize}
+\item \textbf{*\_seq}: Ví dụ: \textbf{declaration\_seq} là đại diện 
+cho một dãy 
+các \textbf{declaration} mà không có dấu ngăn cách giữa chúng. 
+Hay: \\
+\tab \textbf{declaration\_seq $\rightarrow$ declaration | 
+    declaration\_seq declaration}
 
-%token BREAK
-%token CASE
-%token CHAR
-%token CONST
-%token CONTINUE
-%token DEFAULT
-%token DO
-%token DOUBLE
-%token ELSE
-%token ENUM
-%token FLOAT
-%token FOR
-%token GOTO
-%token IF
-%token INT
-%token LONG
-%token RETURN
-%token SHORT
-%token SIZEOF
-%token STRUCT
-%token SWITCH
-%token UNION
-%token UNSIGNED
-%token VOID
-%token WHILE
+\item \textbf{*\_list}: Ví dụ: \textbf{param\_list} là đại diện cho 
+một dãy 
+các \textbf{param} mà giữa chúng có dấu ngăn cách, thông thường là 
+dấu phẩy. Hay: \\
+\tab \textbf{param\_list $\rightarrow$ param | param\_list , param}
 
-%token ARROW
-%token INCREASE
-%token DECREASE
-%token SHIFT_LEFT
-%token SHIFT_RIGHT
+\item \textbf{*\_opt}:  Ví dụ: \textbf{pointer\_opt} là đại diện 
+cho một kí tự \textbf{pointer} hoặc không có kí tự nào cả. Hay: \\
+\tab \textbf{pointer\_opt $\rightarrow$ pointer | $\epsilon$}
+\end{itemize}
 
-%token GT
-%token LT
-%token GE
-%token LE
-%token EQ
-%token NE
-
-%token AND
-%token OR
-
-%token ADD_ASSIGN
-%token SUB_ASSIGN
-%token MUL_ASSIGN
-%token DIV_ASSIGN
-%token REM_ASSIGN
-%token SL_ASSIGN
-%token SR_ASSIGN
-%token AND_ASSIGN
-%token OR_ASSIGN
-%token XOR_ASSIGN
-
-%start translation_unit
-
-%%
+\subsection{Các sản xuất của ngôn ngữ Mini-C}
+Các sản xuất được viết bằng ngôn ngữ định nghĩa của Bison, bao gồm:
+\subsubsection{translation\_unit}
+\begin{lstlisting}
 translation_unit
     : external_declaration
     | translation_unit external_declaration
     ;
+\end{lstlisting}
+Là kí tự bắt đầu của văn phạm. Bao gồm một dãy các 
+\textbf{external\_declaration}. \\
 
+\subsubsection{external\_declaration}
+\begin{lstlisting}
 external_declaration
     : init_declaration
     | function_declaration
     | function_definition
     ;
+\end{lstlisting}
+Là các khai báo có thể được viết bên ngoài hàm. Bao gồm 
+khai báo thông thường \textbf{init\_declaration}, khai báo 
+hàm hoặc định nghĩa hàm. \\
 
+\subsubsection{function\_declaration và function\_definition}
+Khai báo và định nghĩa hàm có cấu trúc như sau: 
+\begin{lstlisting}
 function_declaration 
     : declaration_specifier function_declarator 
         '(' parameter_list_opt ')' ';' ;
@@ -83,7 +57,11 @@ function_definition
     : declaration_specifier function_declarator 
         '(' parameter_list_opt ')' 
         compound_statement ;
+\end{lstlisting}
 
+\subsubsection{parameter\_list}
+Danh sách các tham số của hàm: 
+\begin{lstlisting}
 parameter_list_opt
     : %empty
     | parameter_list
@@ -93,12 +71,18 @@ parameter_list
     : declaration_specifier declarator 
     | parameter_list ',' declaration_specifier declarator
     ;
+\end{lstlisting}
+Trong đó \textbf{declaration\_specifier} là chỉ định 
+phần tiền tố của kiểu (không bao gồm con trỏ và mảng), 
+\textbf{declarator} sẽ bao gồm khai báo con trỏ, 
+mảng và một định danh. Ngôn ngữ Mini-C được định nghĩa ở đây không 
+hỗ trợ khai báo hay định nghĩa hàm mà 
+tham số có kiểu nhưng không có tên.
+số. Ví dụ: \textbf{void func(int **); }. \\
 
-function_declarator
-    : IDENT
-    | pointer_seq IDENT
-    ;
-
+\subsection{declaration\_specifier}
+Phần chỉ định khai báo, có cấu trúc như sau: 
+\begin{lstlisting}
 const_opt
     : %empty
     | CONST
@@ -122,7 +106,26 @@ type_integer
     | INT
     | LONG
     ;
+\end{lstlisting}
+Trong đó \textbf{CONST} là từ khóa \textbf{const}, được sử dụng 
+cho các biến hằng. Các kiểu cho phép bao gồm: 
+\begin{itemize}
+\item void
+\item Số phẩy động: float, double
+\item Số nguyên có dấu hoặc không dấu: 
+    có 4 loại ứng với 4 kích thước
+    khác nhau: char (1 byte), short (2 byte), 
+    int (4 byte), long (8 byte). 
+\item struct hoặc union
+\item enum 
+\end{itemize}
 
+\subsubsection{init\_declaration}
+Khai báo thông thường (có thể trong hàm hoặc ngoài hàm). 
+Ở đây cho phép khai báo mà không có tên của biến 
+mục đích cho các định nghĩa struct, enum hoặc union có thể 
+không có tên biến sau định nghĩa. 
+\begin{lstlisting}
 init_declaration
     : declaration_specifier init_declarator_list ';'
     | declaration_specifier ';'
@@ -137,18 +140,19 @@ init_declarator
     : declarator 
     | declarator '=' initializer
     ;
+\end{lstlisting}
 
-initializer
-    : assignment_expression
-    | '{' initializer_list '}'
-    | '{' initializer_list ',' '}'
-    ;
+\subsubsection{declarator}
+Ví dụ trong khai báo: 
+\begin{lstlisting}
+const int * const p, **p[100];
+\end{lstlisting}
+Thì \textbf{const int} là \textbf{declaration\_specifier}. \\ 
+Còn \textbf{* const p}, 
+\textbf{**p[100]} là các \textbf{declarator}. \\
+Cũng cho phép khai báo mảng mà không có số lượng phần tử. 
 
-initializer_list
-    : initializer
-    | initializer_list ',' initializer
-    ;
-
+\begin{lstlisting}
 declarator
     : direct_declarator 
     | pointer_seq direct_declarator
@@ -170,7 +174,26 @@ direct_declarator
     : IDENT
     | direct_declarator '[' assignment_expression_opt ']'
     ;
+\end{lstlisting}
 
+
+\subsubsection{initializer}
+\begin{lstlisting}
+initializer
+    : assignment_expression
+    | '{' initializer_list '}'
+    | '{' initializer_list ',' '}'
+    ;
+
+initializer_list
+    : initializer
+    | initializer_list ',' initializer
+    ;
+\end{lstlisting}
+
+\subsubsection{struct\_or\_union\_specifier}
+Định nghĩa hoặc khai báo struct và union:
+\begin{lstlisting}
 ident_opt
     : %empty
     | IDENT
@@ -199,7 +222,11 @@ struct_declarator_list
     : declarator
     | struct_declarator_list ',' declarator
     ;
+\end{lstlisting}
 
+\subsubsection{enum\_specifier}
+Định nghĩa hoặc khai báo enum:
+\begin{lstlisting}
 enum_specifier
     : ENUM ident_opt '{' enumerator_list '}'
     | ENUM ident_opt '{' enumerator_list ',' '}'
@@ -215,7 +242,13 @@ enumerator
     : IDENT 
     | IDENT '=' constant_expression
     ;
+\end{lstlisting}
+Trong đó có hỗ trợ dấu phẩy sau danh sách các \textbf{enumerator} 
+(hay trailing comma). \\
 
+\subsection{expression}
+Các biểu thức: 
+\begin{lstlisting}
 primary_expression
     : IDENT
     | CONSTANT
@@ -259,7 +292,6 @@ unary_operator
 
 cast_expression
     : unary_expression
-    /* | '(' type_name ')' cast_expression */
     ;
 
 multiplicative_expression
@@ -350,7 +382,11 @@ expression
     ;
 
 constant_expression: conditional_expression ;
+\end{lstlisting}
 
+\subsubsection{statement}
+Các loại statement:
+\begin{lstlisting}
 statement
     : labeled_statement
     | compound_statement
@@ -412,5 +448,7 @@ jmp_statement
     | BREAK ';'
     | RETURN expression_opt ';'
     ;
+\end{lstlisting}
+Trong đó có đầy đủ các lệnh trong C99.
 
-%%
+\end{document}
